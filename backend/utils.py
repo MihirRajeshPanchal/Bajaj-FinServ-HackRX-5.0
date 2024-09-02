@@ -195,6 +195,16 @@ def delete_all_elements_on_slide(service, presentation_id, slide_number):
     else:
         raise ValueError(f"Slide number {slide_number} is out of range.")
     
+def copy_presentation(drive_service, original_presentation_id: str, new_name: str):
+    body = {
+        'name': new_name
+    }
+    copied_file = drive_service.files().copy(
+        fileId=original_presentation_id,
+        body=body
+    ).execute()
+    return copied_file
+
 def drive_init(creds):
     """Initialize the Google Drive API service."""
     service = build("drive", "v3", credentials=creds)
