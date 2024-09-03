@@ -16,4 +16,5 @@ class SlideCreationRequest(BaseModel):
 
 class SlidesRequest(BaseModel):
     presentation_id: str
+    name: str
     slides: List[SlideCreationRequest]
