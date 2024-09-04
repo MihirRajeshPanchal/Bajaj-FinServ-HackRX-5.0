@@ -18,3 +18,22 @@ class SlidesRequest(BaseModel):
     presentation_id: str
     name: str
     slides: List[SlideCreationRequest]
+    
+class RagRequest(BaseModel):
+    file_path: str
+    
+class Question(BaseModel):
+    questionText: str
+    questionOptions: List[str]
+    questionAnswerIndex: int
+
+class QuizResponse(BaseModel):
+    questions: List[Question]
+
+class QuizRequest(BaseModel):
+    no_of_questions: int
+    file_path: str
+    
+class SlideRequest(BaseModel):
+    num_slides: int
+    file_path: str
