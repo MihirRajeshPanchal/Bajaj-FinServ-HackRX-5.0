@@ -11,14 +11,13 @@ const config: Config = {
       fontFamily: {
         poppins: ['Poppins', 'sans-serif'],
       },
-      // colors: {
-      //   pastelBlue: '#AECBFA',
-      //   pastelGreen: '#C6F6D5',
-      //   pastelYellow: '#FEF3C7',
-      //   pastelPink: '#FBCFE8',
-      //   pastelPurple: '#E9D8FD',
-      //   pastelRed: '#FED7D7',
-      // },
+      colors: {
+        'text': 'hsl(216, 16%, 94%)',
+        'background': 'hsl(210, 30%, 4%)',
+        'primary': 'hsl(209, 41%, 75%)',
+        'secondary': 'hsl(210, 55%, 31%)',
+        'accent': 'hsl(210, 70%, 52%)',
+      },
     },
   },
   plugins: [],
