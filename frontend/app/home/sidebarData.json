@@ -1,0 +1,86 @@
+{
+    "sidebarData": [
+        {
+            "name": "Online Plans",
+            "icon": "folder",
+            "children": [
+                {
+                    "name": "Health Guard",
+                    "icon": "file-medical",
+                    "children": [
+                        {
+                            "name": "Brochure",
+                            "icon": "file-pdf"
+                        },
+                        {
+                            "name": "Customer Information Sheet",
+                            "icon": "file-lines"
+                        },
+                        {
+                            "name": "Policy",
+                            "icon": "file-contract"
+                        },
+                        {
+                            "name": "Wordings",
+                            "icon": "file-word"
+                        },
+                        {
+                            "name": "Proposal Form",
+                            "icon": "file-pen"
+                        }
+                    ]
+                },
+                {
+                    "name": "Health Infinity Form",
+                    "icon": "file-medical",
+                    "children": [
+                        {
+                            "name": "Brochure",
+                            "icon": "file-pdf"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Personal Accident",
+            "icon": "folder",
+            "children": [
+                {
+                    "name": "Sankat Mochan",
+                    "icon": "file-shield",
+                    "children": [
+                        {
+                            "name": "Brochure",
+                            "icon": "file-pdf"
+                        },
+                        {
+                            "name": "Customer Information Sheet",
+                            "icon": "file-lines"
+                        },
+                        {
+                            "name": "Policy",
+                            "icon": "file-contract"
+                        },
+                        {
+                            "name": "Wordings",
+                            "icon": "file-word"
+                        },
+                        {
+                            "name": "Proposal Form",
+                            "icon": "file-pen"
+                        },
+                        {
+                            "name": "Claim Form",
+                            "icon": "file-medical"
+                        },
+                        {
+                            "name": "Claim Process",
+                            "icon": "file-medical"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
