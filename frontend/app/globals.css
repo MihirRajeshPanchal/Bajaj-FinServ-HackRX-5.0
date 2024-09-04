@@ -32,3 +32,15 @@ body {
   }
 }
 
+
+.scrollbar::-webkit-scrollbar {
+  width: 0.35rem;
+}
+.scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(0, 25%, 84%, 0.5);
+  border-radius: 999px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(313, 20%, 69%, 0.5);
+}
