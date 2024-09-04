@@ -1,23 +1,21 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
-class SlideCreationRequest(BaseModel):
-    slide_number: int
-    text: Optional[str] = None
-    bullet: Optional[str] = None
-    image_url: Optional[str] = None
-    scaleX: Optional[int] = 1
-    scaleY: Optional[int] = 1
-    x: Optional[int] = None
-    y: Optional[int] = None
-    bold: Optional[bool] = False
-    underline: Optional[bool] = False
-    fontsize: Optional[int] = 18
+class Slide(BaseModel):
+    slide_number : int
+    slide_main_title: Optional[str] = None
+    slide_main_subtitle: Optional[str] = None
+    slide_voiceover: Optional[str] = None
+    slide_title: Optional[str] = None
+    bullet_points: Optional[List[str]] = None
+    slide_disclaimer: Optional[str] = None
+    slide_ending_note: Optional[str] = None
 
 class SlidesRequest(BaseModel):
     presentation_id: str
-    name: str
-    slides: List[SlideCreationRequest]
+    file_path: str
+    name: Optional[str] = None
+    slides: Optional[List[Slide]] = None
     
 class RagRequest(BaseModel):
     file_path: str
