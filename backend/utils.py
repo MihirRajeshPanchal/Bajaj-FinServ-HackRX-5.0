@@ -24,7 +24,7 @@ def get_slide_id_by_number(service, presentation_id, slide_number):
     else:
         raise ValueError(f"Slide number {slide_number} is out of range.")
 
-def add_custom_text_to_slide(service, presentation_id, slide_number, text, x, y, bold=False, underline=False, fontsize=18):
+def add_custom_text_to_slide(service, presentation_id, slide_number, text, x, y, width= 5000000, bold=False, underline=False, fontsize=18):
     """Add a customized text box to a specified slide."""
     slide_id = get_slide_id_by_number(service, presentation_id, slide_number)
     suffix = generate_unique_suffix()
@@ -47,7 +47,7 @@ def add_custom_text_to_slide(service, presentation_id, slide_number, text, x, y,
                     "pageObjectId": slide_id,  
                     "size": {
                         "height": {"magnitude": 1000000, "unit": "EMU"},
-                        "width": {"magnitude": 5000000, "unit": "EMU"},
+                        "width": {"magnitude": width, "unit": "EMU"},
                     },
                     "transform": {
                         "scaleX": 1,
@@ -79,11 +79,16 @@ def add_custom_text_to_slide(service, presentation_id, slide_number, text, x, y,
         body={"requests": requests}
     ).execute()
 
-def add_bullet_text_to_slide(service, presentation_id, slide_number, text, x, y, fontsize=18):
-    """Add a text box with bullet points to a specified slide."""
+def add_bullet_text_to_slide(service, presentation_id, slide_number, bullet_points, x, y, height, width, fontsize=18, line_spacing=1.5):
+    """Add a text box with bullet points to a specified slide with simulated line spacing."""
+    if not bullet_points:
+        return 
+
     slide_id = get_slide_id_by_number(service, presentation_id, slide_number)
     suffix = generate_unique_suffix()
     object_id = f"BulletTextBox_{slide_number}_{suffix}"  
+    
+    bullet_points_text = '\n\n'.join([f'• {point}' for point in bullet_points])
     
     requests = [
         {
@@ -93,8 +98,8 @@ def add_bullet_text_to_slide(service, presentation_id, slide_number, text, x, y,
                 "elementProperties": {
                     "pageObjectId": slide_id,  
                     "size": {
-                        "height": {"magnitude": 1000000, "unit": "EMU"},
-                        "width": {"magnitude": 5000000, "unit": "EMU"},
+                        "height": {"magnitude": height, "unit": "EMU"},
+                        "width": {"magnitude": width, "unit": "EMU"},
                     },
                     "transform": {
                         "scaleX": 1,
@@ -109,7 +114,7 @@ def add_bullet_text_to_slide(service, presentation_id, slide_number, text, x, y,
         {
             "insertText": {
                 "objectId": object_id,
-                "text": text
+                "text": bullet_points_text
             }
         },
         {
@@ -124,7 +129,6 @@ def add_bullet_text_to_slide(service, presentation_id, slide_number, text, x, y,
                 "fields": "fontSize"
             }
         },
-
     ]
     
     response = service.presentations().batchUpdate(
@@ -132,6 +136,7 @@ def add_bullet_text_to_slide(service, presentation_id, slide_number, text, x, y,
         body={"requests": requests}
     ).execute()
     return response
+
 
 def add_image_to_slide(service, presentation_id, slide_number, image_url, x, y, scaleX=1, scaleY=1, width=1000000, height=1000000):
     """Add an image to a specified slide."""

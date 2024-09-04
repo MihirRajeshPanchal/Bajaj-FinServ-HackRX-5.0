@@ -1,10 +1,12 @@
 from io import BytesIO
+import json
 import re
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
+from pydantic import ValidationError
 from backend.constants import APP_NAME
 from backend.auth import load_credentials
-from backend.models import QuizRequest, RagRequest, SlideRequest, SlidesRequest
+from backend.models import QuizRequest, RagRequest, SlideRequest, SlidesRequest, Slide
 from backend.rag import get_pdf_text_from_bytes, get_text_chunks, get_vector_store, user_input
 from backend.slides import build_slide, slides_init
 from backend.utils import copy_presentation, drive_init, export_presentation
@@ -32,7 +34,7 @@ async def create_slides(slides_request: SlidesRequest):
         slides_service = slides_init(creds)
         drive_service = drive_init(creds)
         original_presentation_id = slides_request.presentation_id
-        new_presentation_name = slides_request.name
+        new_presentation_name = slides_request.file_path
 
         duplicated_presentation = copy_presentation(
             drive_service,
@@ -43,7 +45,22 @@ async def create_slides(slides_request: SlidesRequest):
 
         if not duplicated_presentation_id:
             raise HTTPException(status_code=500, detail="Failed to duplicate presentation.")
+        
+        with open(f"compute/{slides_request.file_path}.json", 'r') as file:
+            data = json.load(file)
 
+        slides_data = data["text"]["slides"]
+        slides_list = []
+        for slide_data in slides_data:
+            try:
+                slide = Slide(**slide_data) 
+                slides_list.append(slide)
+            except ValidationError as e:
+                raise HTTPException(status_code=400, detail=f"Invalid slide data: {e}")
+
+        slides_request = slides_request.copy(update={"name": slides_request.file_path})
+        slides_request = slides_request.copy(update={"slides": slides_list})
+        
         for slide_request in slides_request.slides:
             build_slide(slides_service, duplicated_presentation_id, slide_request)
 
@@ -127,8 +144,7 @@ async def quiz_generate(quiz_request: QuizRequest):
 async def slide_generate(slide_request: SlideRequest):
     try:
         prompt = '''
-        Please provide a JSON with 4 slides in the following schema. Each slide should include detailed voiceover text as one would present in a PowerPoint presentation and bullet points formatted for a presentation.
-
+        Please provide a JSON with 5 slides in the following schema. Each slide should include detailed voiceover text as one would present in a PowerPoint presentation and bullet points formatted for a presentation.
         {{
         "slides": [
             {{
@@ -141,7 +157,8 @@ async def slide_generate(slide_request: SlideRequest):
                 "bullet_points": [
                     "Bullet point 1 formatted for presentation",
                     "Bullet point 2 formatted for presentation",
-                    "Bullet point 3 formatted for presentation"
+                    "Bullet point 3 formatted for presentation",
+                    "Bullet point 4 formatted for presentation"
                 ],
                 "slide_voiceover": "Detailed voiceover explanation for slide 2, presented as a transcript for a PowerPoint presentation. This should elaborate on each bullet point and provide a comprehensive explanation."
             }},
@@ -150,7 +167,8 @@ async def slide_generate(slide_request: SlideRequest):
                 "bullet_points": [
                     "Bullet point 1 formatted for presentation",
                     "Bullet point 2 with figures formatted for presentation",
-                    "Bullet point 3 formatted for presentation"
+                    "Bullet point 3 formatted for presentation",
+                    "Bullet point 4 formatted for presentation"
                 ],
                 "slide_voiceover": "Detailed voiceover explanation for slide 3, presented as a transcript for a PowerPoint presentation. This should provide a thorough explanation of the bullet points, including any relevant figures or data."
             }},
@@ -159,7 +177,8 @@ async def slide_generate(slide_request: SlideRequest):
                 "bullet_points": [
                     "Bullet point 1 formatted for presentation",
                     "Bullet point 2 with figures formatted for presentation",
-                    "Bullet point 3 formatted for presentation"
+                    "Bullet point 3 formatted for presentation",
+                    "Bullet point 4 formatted for presentation"
                 ],
                 "slide_voiceover": "Detailed voiceover explanation for slide 4, presented as a transcript for a PowerPoint presentation. This should offer a clear explanation of the final bullet points and summarize the key takeaways."
             }},
@@ -175,10 +194,18 @@ async def slide_generate(slide_request: SlideRequest):
         '''
 
         answer = user_input(prompt, filepath=f'compute/{slide_request.file_path}')
-        return {"answer": answer}
+        for index, slide in enumerate(answer["text"]["slides"], start=1):
+            slide["slide_number"] = index
+        json_string = json.dumps(answer, indent=4)
+           
+        file_name = f"compute/{slide_request.file_path}.json"
+        with open(file_name, "w") as file:
+            file.write(json_string)
+        return answer
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
 if __name__ == "__main__":
+    
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=5000, debug=True)
