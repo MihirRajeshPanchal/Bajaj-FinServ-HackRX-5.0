@@ -1,6 +1,5 @@
 *.pyc
 .env
 scripts
-*.json
 *.pptx
 compute/
