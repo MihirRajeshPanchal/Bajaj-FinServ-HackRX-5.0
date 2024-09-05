@@ -4,7 +4,7 @@ import {  useState } from "react";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collisions";
 import Character from "@/components/ui/Character";
 
-export default function Home() {
+export default function Page() {
   const router = useRouter();
   const [name, setName] = useState("Parshav"); 
   
@@ -26,8 +26,8 @@ export default function Home() {
           </h1>
           <p className="mt-2 text-xl font-medium">A vieo & quiz generation tool from PDFs.</p>
           <div className="mt-4 flex gap-3">
-            <button className="py-4 px-6 rounded-lg bg-secondary font-medium">How does it work?</button>
-            <button className="py-4 px-6 rounded-lg bg-primary text-black font-medium">Get Started</button>
+            <button className="py-4 px-6 rounded-lg border-4 border-accent font-medium hover:bg-accent hover:text-white transition-colors">How does it work?</button>
+            <button className="py-4 px-6 rounded-lg bg-accent font-medium hover:-translate-y-1 transition-transform">Get Started</button>
           </div>
         </div>
       </div>

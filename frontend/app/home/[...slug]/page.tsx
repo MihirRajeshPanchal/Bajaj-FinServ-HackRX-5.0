@@ -27,17 +27,19 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-4">{pageData.title}</h1>
-      <p className="mb-4">{pageData.content}</p>
-      {pageData.videoUrl ? (
-        <div className="aspect-video mb-4">
-          <iframe src={pageData.videoUrl} className="w-full h-full" allowFullScreen />
-        </div>
-      ) : (
-        <button className="bg-blue-500 text-white px-4 py-2 rounded">Generate Video</button>
-      )}
-      <button className="bg-green-500 text-white px-4 py-2 rounded ml-4">Take Quiz</button>
+    <div className="pt-14">
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-4">{pageData.title}</h1>
+        <p className="mb-4">{pageData.content}</p>
+        {pageData.videoUrl ? (
+          <div className="aspect-video mb-4">
+            <iframe src={pageData.videoUrl} className="w-full h-full" allowFullScreen />
+          </div>
+        ) : (
+          <button className="bg-blue-500 text-white px-4 py-2 rounded">Generate Video</button>
+        )}
+        <button className="bg-green-500 text-white px-4 py-2 rounded ml-4">Take Quiz</button>
+      </div>
     </div>
   );
 }

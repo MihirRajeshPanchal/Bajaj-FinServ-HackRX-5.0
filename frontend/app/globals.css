@@ -15,15 +15,32 @@
     --secondary: hsl(210 55% 31%);
     --accent: hsl(210 70% 52%);
   }
+
+  :root {
+    --text: #f3f0f9;
+    --background: #040208;
+    --primary: #5c25cb;
+    --secondary: #370c8d;
+    --accent: #4301c6;
+  }
+  /* Light */
+  :root {
+    --text: 264, 50%, 4%;
+    --background: 260, 60%, 97%;
+    --primary: 260, 69%, 53%;
+    --secondary: 260, 84%, 70%;
+    --accent: 260, 99%, 61%;
+  }
 }
 
 
 
 body {
-  background-color: var(--background);
+  background-color: hsl(var(--background));
 }
+
 * {
-  color: var(--text);
+  color: hsl(var(--text));
 }
 
 @layer utilities {
@@ -34,10 +51,12 @@ body {
 
 
 .scrollbar::-webkit-scrollbar {
+  /* display: none; */
   width: 0.35rem;
 }
+
 .scrollbar::-webkit-scrollbar-thumb {
-  background: hsl(0, 25%, 84%, 0.5);
+  background: hsl(var(--secondary), 0.3);
   border-radius: 999px;
 }
 
