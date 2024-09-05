@@ -5,7 +5,7 @@ from typing import Any, Dict
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import ValidationError
-from backend.aws import dump_quiz_to_dynamodb, dump_slide_to_dynamodb, store_email_in_dynamodb, quiztable, slidetable
+from backend.aws import BajajBucket, download_from_s3, download_s3_folder, dump_quiz_to_dynamodb, dump_slide_to_dynamodb, store_email_in_dynamodb, quiztable, slidetable, upload_folder_to_s3, upload_to_s3
 from backend.constants import APP_NAME
 from backend.auth import get_user_info, load_credentials
 from backend.models import QuizRequest, RagRequest, SlideRequest, SlidesRequest, Slide
@@ -41,85 +41,109 @@ async def create_slides(slides_request: SlidesRequest):
         original_presentation_id = slides_request.presentation_id
         new_presentation_name = slides_request.file_path
 
-        duplicated_presentation = copy_presentation(
-            drive_service,
-            original_presentation_id,
-            new_presentation_name
-        )
-        duplicated_presentation_id = duplicated_presentation.get('id')
+        s3_file_path = f'{slides_request.file_path}/{new_presentation_name}.pptx'
+        try:
+            presentation_file = download_from_s3(BajajBucket, s3_file_path)
+            return StreamingResponse(
+                presentation_file,
+                media_type='application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                headers={"Content-Disposition": f"attachment; filename={new_presentation_name}.pptx"}
+            )        
+        except Exception as e:
+            duplicated_presentation = copy_presentation(
+                drive_service,
+                original_presentation_id,
+                new_presentation_name
+            )
+            duplicated_presentation_id = duplicated_presentation.get('id')
 
-        if not duplicated_presentation_id:
-            raise HTTPException(status_code=500, detail="Failed to duplicate presentation.")
-        
-        response = slidetable.get_item(
-            Key={'file_path': slides_request.file_path}
-        )
-        
-        if 'Item' in response:
-            data = json.loads(response['Item']['json_data'])
-        else:
-            data = await generate_slide_data(slides_request.file_path)
-            dump_slide_to_dynamodb(slides_request.file_path, data)
+            if not duplicated_presentation_id:
+                raise HTTPException(status_code=500, detail="Failed to duplicate presentation.")
+            
+            response = slidetable.get_item(
+                Key={'file_path': slides_request.file_path}
+            )
+            
+            if 'Item' in response:
+                data = json.loads(response['Item']['json_data'])
+            else:
+                data = await generate_slide_data(slides_request.file_path)
+                dump_slide_to_dynamodb(slides_request.file_path, data)
 
-        slides_data = data["text"]["slides"]
-        slides_list = []
-        for slide_data in slides_data:
-            try:
-                slide = Slide(**slide_data) 
-                slides_list.append(slide)
-            except ValidationError as e:
-                raise HTTPException(status_code=400, detail=f"Invalid slide data: {e}")
+            slides_data = data["text"]["slides"]
+            slides_list = []
+            for slide_data in slides_data:
+                try:
+                    slide = Slide(**slide_data) 
+                    slides_list.append(slide)
+                except ValidationError as e:
+                    raise HTTPException(status_code=400, detail=f"Invalid slide data: {e}")
 
-        slides_request = slides_request.copy(update={"name": slides_request.file_path})
-        slides_request = slides_request.copy(update={"slides": slides_list})
-        
-        for slide_request in slides_request.slides:
-            build_slide(slides_service, duplicated_presentation_id, slide_request)
+            slides_request = slides_request.copy(update={"name": slides_request.file_path})
+            slides_request = slides_request.copy(update={"slides": slides_list})
+            
+            for slide_request in slides_request.slides:
+                build_slide(slides_service, duplicated_presentation_id, slide_request)
 
-        export_format = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-        presentation_file = export_presentation(
-            drive_service,
-            duplicated_presentation_id,
-            export_format
-        )
+            export_format = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+            presentation_file = export_presentation(
+                drive_service,
+                duplicated_presentation_id,
+                export_format
+            )
 
-        if not isinstance(presentation_file, BytesIO):
-            raise HTTPException(status_code=500, detail="Failed to export presentation.")
-        
-        file_path = f'compute/{new_presentation_name}.pptx'
-        with open(file_path, 'wb') as f:
-            f.write(presentation_file.getvalue())
+            if not isinstance(presentation_file, BytesIO):
+                raise HTTPException(status_code=500, detail="Failed to export presentation. The returned file is not a BytesIO object.")
 
-        return StreamingResponse(
-            open(file_path, 'rb'),
-            media_type=export_format,
-            headers={"Content-Disposition": f"attachment; filename={new_presentation_name}.pptx"}
-        )
+            file_path = f'compute/{new_presentation_name}/{new_presentation_name}.pptx'
+            with open(file_path, 'wb') as f:
+                f.write(presentation_file.getvalue())
+            s3_buffer = BytesIO(presentation_file.getvalue())
+            upload_to_s3(s3_buffer, BajajBucket, s3_file_path)
+            return StreamingResponse(
+                open(file_path, 'rb'),
+                media_type=export_format,
+                headers={"Content-Disposition": f"attachment; filename={new_presentation_name}.pptx"}
+            )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/rag_embed")
 async def rag_embed(rag_request: RagRequest):
     try:
-        pdf_directory = 'compute/'
+        compute_directory = 'compute/'
+        pdf_directory = "pdfs/"
+        os.makedirs(compute_directory, exist_ok=True)
         os.makedirs(pdf_directory, exist_ok=True)
         
-        file_path = os.path.join(pdf_directory, rag_request.file_path)
+        local_embedding_path = os.path.join(compute_directory, f"{os.path.splitext(rag_request.file_path)[0]}/faiss_index/index.faiss")
         
-        if not os.path.exists(file_path):
-            raise HTTPException(status_code=404, detail="File not found")
-
-        with open(file_path, 'rb') as pdf_file:
-            pdf_bytes = pdf_file.read()
+        if os.path.exists(local_embedding_path):
+            return {"response": "Embedding already exists locally"}
         
-        pdf_text = get_pdf_text_from_bytes(pdf_bytes)
+        s3_prefix = f"{os.path.splitext(rag_request.file_path)[0]}/faiss_index"
+        try:
+            local_s3_folder_path = os.path.join(compute_directory, f"{os.path.splitext(rag_request.file_path)[0]}/faiss_index")
+            os.makedirs(local_s3_folder_path, exist_ok=True)
+            download_s3_folder(BajajBucket, s3_prefix, local_s3_folder_path)
+            return {"response": "Embedding downloaded from S3"}
+        except FileNotFoundError:
+            file_path = os.path.join(pdf_directory, rag_request.file_path)
+            
+            if not os.path.exists(file_path):
+                raise HTTPException(status_code=404, detail="File not found")
 
-        text_chunks = get_text_chunks(pdf_text)
+            with open(file_path, 'rb') as pdf_file:
+                pdf_bytes = pdf_file.read()
 
-        vector_store_dir = f'{pdf_directory}{os.path.splitext(rag_request.file_path)[0]}_'
-        
-        get_vector_store(text_chunks, filepath=vector_store_dir)
-        return {"response": "Embedding Successful"}
+            pdf_text = get_pdf_text_from_bytes(pdf_bytes)
+            text_chunks = get_text_chunks(pdf_text)
+            vector_store_dir = f'{compute_directory}{os.path.splitext(rag_request.file_path)[0]}/faiss_index'
+            
+            get_vector_store(text_chunks, filepath=vector_store_dir)
+            upload_folder_to_s3(vector_store_dir, BajajBucket, s3_prefix)
+            
+            return {"response": "Embedding created and uploaded to S3"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -153,7 +177,7 @@ async def quiz_generate(quiz_request: QuizRequest):
 
         Ensure the provided JSON adheres to the defined schema.
         '''.format(quiz_request.no_of_questions)
-        answer = user_input(prompt, filepath=f'compute/{quiz_request.file_path}')
+        answer = user_input(prompt, filepath=f'compute/{quiz_request.file_path}/faiss_index')
         dump_quiz_to_dynamodb(quiz_request.file_path, answer)
         return {"answer": answer}
     except Exception as e:
@@ -213,7 +237,7 @@ async def generate_slide_data(file_path: str) -> Dict[str, Any]:
     Ensure the provided JSON adheres to the defined schema and includes detailed voiceover text and bullet points suitable for a PowerPoint presentation.
     '''
 
-    answer = user_input(prompt, filepath=f'compute/{file_path}')
+    answer = user_input(prompt, filepath=f'compute/{file_path}/faiss_index')
     for index, slide in enumerate(answer["text"]["slides"], start=1):
         slide["slide_number"] = index
     return answer

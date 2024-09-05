@@ -36,7 +36,6 @@ def get_text_chunks(text):
 def get_vector_store(chunks, filepath):
     embeddings = OpenAIEmbeddings()
     vector_store = FAISS.from_texts(chunks, embedding=embeddings)
-    filepath = filepath+"faiss_index"
     vector_store.save_local(filepath)
 
 def get_conversational_chain():
@@ -60,7 +59,6 @@ def get_conversational_chain():
 
 def user_input(user_question, filepath):
     embeddings = OpenAIEmbeddings()
-    filepath = filepath+"_faiss_index"
     new_db = FAISS.load_local(filepath, embeddings, allow_dangerous_deserialization=True)
     docs = new_db.similarity_search(user_question)
     chain = get_conversational_chain()
