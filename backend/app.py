@@ -51,8 +51,15 @@ async def create_slides(slides_request: SlidesRequest):
         if not duplicated_presentation_id:
             raise HTTPException(status_code=500, detail="Failed to duplicate presentation.")
         
-        with open(f"compute/{slides_request.file_path}.json", 'r') as file:
-            data = json.load(file)
+        response = slidetable.get_item(
+            Key={'file_path': slides_request.file_path}
+        )
+        
+        if 'Item' in response:
+            data = json.loads(response['Item']['json_data'])
+        else:
+            data = await generate_slide_data(slides_request.file_path)
+            dump_slide_to_dynamodb(slides_request.file_path, data)
 
         slides_data = data["text"]["slides"]
         slides_list = []
@@ -223,9 +230,6 @@ async def slide_generate(slide_request: SlideRequest):
 
         answer = await generate_slide_data(slide_request.file_path)
         
-        file_name = f"compute/{slide_request.file_path}.json"
-        with open(file_name, "w") as file:
-            file.write(json.dumps(answer, indent=4))
         dump_slide_to_dynamodb(slide_request.file_path, answer)
         return answer
     except Exception as e:
