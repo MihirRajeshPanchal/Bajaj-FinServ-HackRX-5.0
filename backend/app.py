@@ -1,11 +1,13 @@
 from io import BytesIO
 import json
 import re
+from typing import Any, Dict
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import ValidationError
+from backend.aws import dump_quiz_to_dynamodb, dump_slide_to_dynamodb, store_email_in_dynamodb, quiztable, slidetable
 from backend.constants import APP_NAME
-from backend.auth import load_credentials
+from backend.auth import get_user_info, load_credentials
 from backend.models import QuizRequest, RagRequest, SlideRequest, SlidesRequest, Slide
 from backend.rag import get_pdf_text_from_bytes, get_text_chunks, get_vector_store, user_input
 from backend.slides import build_slide, slides_init
@@ -22,10 +24,13 @@ async def app_init():
 @app.get("/auth")
 async def auth():
     try:
-        load_credentials()
+        creds = load_credentials()
+        user_info = get_user_info(creds)
+        email = user_info.get("email")
+        store_email_in_dynamodb(email)
+        return {"response": "Authorization Successful", "email": email}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    return {"response": "Authorization Successful"}
 
 @app.post("/slides")
 async def create_slides(slides_request: SlidesRequest):
@@ -114,6 +119,12 @@ async def rag_embed(rag_request: RagRequest):
 @app.post("/quiz_generate")
 async def quiz_generate(quiz_request: QuizRequest):
     try:
+        response = quiztable.get_item(
+            Key={'file_path': quiz_request.file_path}
+        )
+        
+        if 'Item' in response:
+            return json.loads(response['Item']['json_data'])
         prompt = '''
         Please provide a JSON with {} generated questions and answers in the following schema:
 
@@ -136,71 +147,86 @@ async def quiz_generate(quiz_request: QuizRequest):
         Ensure the provided JSON adheres to the defined schema.
         '''.format(quiz_request.no_of_questions)
         answer = user_input(prompt, filepath=f'compute/{quiz_request.file_path}')
+        dump_quiz_to_dynamodb(quiz_request.file_path, answer)
         return {"answer": answer}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+async def generate_slide_data(file_path: str) -> Dict[str, Any]:
+    """
+    Function to generate slide data based on file path.
+    """
+    prompt = '''
+    Please provide a JSON with 5 slides in the following schema. Each slide should include detailed voiceover text as one would present in a PowerPoint presentation and bullet points formatted for a presentation.
+    {{
+    "slides": [
+        {{
+            "slide_main_title": "Title for slide 1",
+            "slide_main_subtitle": "Subtitle for slide 1",
+            "slide_voiceover": "Detailed voiceover explanation for slide 1, presented as a transcript for a PowerPoint presentation. This should cover an overview of the presentation and engage the audience with detailed explanations."
+        }},
+        {{
+            "slide_title": "Title for slide 2",
+            "bullet_points": [
+                "Bullet point 1 formatted for presentation",
+                "Bullet point 2 formatted for presentation",
+                "Bullet point 3 formatted for presentation",
+                "Bullet point 4 formatted for presentation"
+            ],
+            "slide_voiceover": "Detailed voiceover explanation for slide 2, presented as a transcript for a PowerPoint presentation. This should elaborate on each bullet point and provide a comprehensive explanation."
+        }},
+        {{
+            "slide_title": "Title for slide 3",
+            "bullet_points": [
+                "Bullet point 1 formatted for presentation",
+                "Bullet point 2 with figures formatted for presentation",
+                "Bullet point 3 formatted for presentation",
+                "Bullet point 4 formatted for presentation"
+            ],
+            "slide_voiceover": "Detailed voiceover explanation for slide 3, presented as a transcript for a PowerPoint presentation. This should provide a thorough explanation of the bullet points, including any relevant figures or data."
+        }},
+        {{
+            "slide_title": "Title for slide 4",
+            "bullet_points": [
+                "Bullet point 1 formatted for presentation",
+                "Bullet point 2 with figures formatted for presentation",
+                "Bullet point 3 formatted for presentation",
+                "Bullet point 4 formatted for presentation"
+            ],
+            "slide_voiceover": "Detailed voiceover explanation for slide 4, presented as a transcript for a PowerPoint presentation. This should offer a clear explanation of the final bullet points and summarize the key takeaways."
+        }},
+        {{
+            "slide_disclaimer": "Disclaimer for the last slide",
+            "slide_ending_note": "Ending note remarks for the last slide",
+            "slide_voiceover": "Detailed voiceover explanation for the last slide, presented as a transcript for a PowerPoint presentation. This should provide concluding remarks and emphasize the importance of the disclaimer and ending notes."
+        }}
+    ]
+    }}
+
+    Ensure the provided JSON adheres to the defined schema and includes detailed voiceover text and bullet points suitable for a PowerPoint presentation.
+    '''
+
+    answer = user_input(prompt, filepath=f'compute/{file_path}')
+    for index, slide in enumerate(answer["text"]["slides"], start=1):
+        slide["slide_number"] = index
+    return answer
+
 @app.post("/slide_generate")
 async def slide_generate(slide_request: SlideRequest):
     try:
-        prompt = '''
-        Please provide a JSON with 5 slides in the following schema. Each slide should include detailed voiceover text as one would present in a PowerPoint presentation and bullet points formatted for a presentation.
-        {{
-        "slides": [
-            {{
-                "slide_main_title": "Title for slide 1",
-                "slide_main_subtitle": "Subtitle for slide 1",
-                "slide_voiceover": "Detailed voiceover explanation for slide 1, presented as a transcript for a PowerPoint presentation. This should cover an overview of the presentation and engage the audience with detailed explanations."
-            }},
-            {{
-                "slide_title": "Title for slide 2",
-                "bullet_points": [
-                    "Bullet point 1 formatted for presentation",
-                    "Bullet point 2 formatted for presentation",
-                    "Bullet point 3 formatted for presentation",
-                    "Bullet point 4 formatted for presentation"
-                ],
-                "slide_voiceover": "Detailed voiceover explanation for slide 2, presented as a transcript for a PowerPoint presentation. This should elaborate on each bullet point and provide a comprehensive explanation."
-            }},
-            {{
-                "slide_title": "Title for slide 3",
-                "bullet_points": [
-                    "Bullet point 1 formatted for presentation",
-                    "Bullet point 2 with figures formatted for presentation",
-                    "Bullet point 3 formatted for presentation",
-                    "Bullet point 4 formatted for presentation"
-                ],
-                "slide_voiceover": "Detailed voiceover explanation for slide 3, presented as a transcript for a PowerPoint presentation. This should provide a thorough explanation of the bullet points, including any relevant figures or data."
-            }},
-            {{
-                "slide_title": "Title for slide 4",
-                "bullet_points": [
-                    "Bullet point 1 formatted for presentation",
-                    "Bullet point 2 with figures formatted for presentation",
-                    "Bullet point 3 formatted for presentation",
-                    "Bullet point 4 formatted for presentation"
-                ],
-                "slide_voiceover": "Detailed voiceover explanation for slide 4, presented as a transcript for a PowerPoint presentation. This should offer a clear explanation of the final bullet points and summarize the key takeaways."
-            }},
-            {{
-                "slide_disclaimer": "Disclaimer for the last slide",
-                "slide_ending_note": "Ending note remarks for the last slide",
-                "slide_voiceover": "Detailed voiceover explanation for the last slide, presented as a transcript for a PowerPoint presentation. This should provide concluding remarks and emphasize the importance of the disclaimer and ending notes."
-            }}
-        ]
-        }}
+        response = slidetable.get_item(
+            Key={'file_path': slide_request.file_path}
+        )
+        
+        if 'Item' in response:
+            return json.loads(response['Item']['json_data'])
 
-        Ensure the provided JSON adheres to the defined schema and includes detailed voiceover text and bullet points suitable for a PowerPoint presentation.
-        '''
-
-        answer = user_input(prompt, filepath=f'compute/{slide_request.file_path}')
-        for index, slide in enumerate(answer["text"]["slides"], start=1):
-            slide["slide_number"] = index
-        json_string = json.dumps(answer, indent=4)
-           
+        answer = await generate_slide_data(slide_request.file_path)
+        
         file_name = f"compute/{slide_request.file_path}.json"
         with open(file_name, "w") as file:
-            file.write(json_string)
+            file.write(json.dumps(answer, indent=4))
+        dump_slide_to_dynamodb(slide_request.file_path, answer)
         return answer
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
