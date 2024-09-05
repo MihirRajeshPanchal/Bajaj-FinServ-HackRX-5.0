@@ -37,7 +37,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ item, path = [] }) => {
   const isActive = pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <li className={`${!hasChildren ? "grid gap-1 grid-cols-[2px_1fr]" : "mt-2"}`}>
+    <li className={`${!hasChildren ? "fileNoChild | grid gap-1 grid-cols-[2px_1fr]" : "mt-2"}`}>
       {!hasChildren && <div className={`bg-primary ${!isActive && "bg-opacity-50"} transition-colors`}></div>}
       <Link href={href}
         className={`flex items-center gap-1.5 p-2 text-gray-300 srounded-lg hover:bg-[hsl(260,100%,83%)] group ${isActive && "bg-[hsl(260,100%,83%)]"} ${hasChildren ? 'font-bold' : 'text-sm m-0.5'}`}
@@ -57,13 +57,17 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ item, path = [] }) => {
         {hasChildren ? <Folder className="h-full p-0.5" /> : <File className="h-5 p-0.5 pe-0" />}
         <span className="flex-1 whitespace-nowrap">{item.name}</span>
       </Link>
-      {isOpen && hasChildren && (
-        <ul className="pl-4 mt-2">
-          {item.children?.map((child, index) => (
-            <SidebarItem key={index} item={child} path={currentPath} />
-          ))}
-        </ul>
-      )}
+      {hasChildren &&
+        (
+          <div className={`grid ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"} transition-[grid-template-rows] duration-500`}>
+            {isOpen && (
+              <ul className="pl-4 smt-1 overflow-hidden">
+                {item.children?.map((child, index) => (
+                  <SidebarItem key={index} item={child} path={currentPath} />
+                ))}
+              </ul>
+            )}
+          </div>)}
     </li>
   );
 };
@@ -74,7 +78,7 @@ export type SidebarProps = {
 
 const Sidebar: React.FC<SidebarProps> = ({ data }) => {
   return (
-    <aside id="logo-sidebar" className="bg-[hsl(260,100%,93%)] pt-14 h-screen overflow-hidden shadow-md" aria-label="Sidebar">
+    <aside id="logo-sidebar" className="~bg-[hsl(260,100%,93%)] pt-14 h-screen overflow-hidden shadow-md" aria-label="Sidebar">
       <div className="scrollbar | h-full overflow-y-auto p-3">
         <ul className="space-y-2 font-medium">
           {data.map((item, index) => (

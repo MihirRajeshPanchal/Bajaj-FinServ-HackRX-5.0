@@ -5,3 +5,5 @@ scripts
 credentials.json
 token.json
 compute/
+backend/venv
+pdfs/

@@ -17,11 +17,11 @@
   }
 
   :root {
-    --text: #f3f0f9;
-    --background: #040208;
-    --primary: #5c25cb;
-    --secondary: #370c8d;
-    --accent: #4301c6;
+    --text: 260, 43%, 96%;
+    --background: 260, 100%, 3%;
+    --primary: 260, 69%, 47%;
+    --secondary: 260, 84%, 30%;
+    --accent: 260, 99%, 39%;
   }
   /* Light */
   :root {
@@ -62,4 +62,8 @@ body {
 
 .scrollbar::-webkit-scrollbar-thumb:hover {
   background: hsl(313, 20%, 69%, 0.5);
+}
+
+.fileNoChild:first-child {
+  margin-top: 0.5rem;
 }
