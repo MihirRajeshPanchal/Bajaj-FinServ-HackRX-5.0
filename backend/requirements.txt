@@ -11,3 +11,4 @@ boto3
 langchain-community
 langchain-openai
 langchain
+PyPDF2
