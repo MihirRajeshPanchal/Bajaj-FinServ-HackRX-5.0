@@ -1,4 +1,4 @@
-import Quiz from "./_components/quiz";
+import Quiz from "../home/[...slug]/_components/quiz";
 
 const Page = () => {
     

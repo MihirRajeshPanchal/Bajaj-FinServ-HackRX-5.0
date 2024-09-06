@@ -1,6 +1,7 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 
 const Quiz: React.FC = () => {
   type Question = {
@@ -27,6 +28,7 @@ const Quiz: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(30);
   const [quizFinished, setQuizFinished] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (timeLeft > 0 && !showAnswer) {
