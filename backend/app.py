@@ -39,11 +39,21 @@ from backend.rag import (
 )
 from backend.slides import build_slide, slides_init
 from backend.utils import copy_presentation, drive_init, export_presentation
+from fastapi.middleware.cors import CORSMiddleware
 import os
 
 app = FastAPI()
 os.makedirs("compute", exist_ok=True)
+origins = [
+    "http://localhost:3000",
+]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def app_init():

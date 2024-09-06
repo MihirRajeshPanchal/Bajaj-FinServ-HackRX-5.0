@@ -4,6 +4,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import TranscriptSection from "./_components/transcriptSection";
 import TableOfContents from "./_components/tableOfContents";
+import QuizButton from "./_components/quizButton";
 type PageData = {
   title: string;
   content: string;
@@ -35,6 +36,7 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
   }
 
   const context = params.slug.slice(0, -1).join(" / ");
+  const currentPath = `/home/${params.slug.join('/')}`;
 
   return (
     <div className="grid grid-flow-col gap-4 pt-14">
@@ -52,7 +54,7 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
               ) : (
                 <button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-blue-600 hover:to-purple-700 transition duration-300 shadow-lg">Generate video</button>
               )}
-              <button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-blue-600 hover:to-purple-700 transition duration-300 shadow-lg">Take Quiz</button>
+              <QuizButton path={currentPath} />
             </div>
             <TranscriptSection transcript={pageData.transcript} />
           </div>
