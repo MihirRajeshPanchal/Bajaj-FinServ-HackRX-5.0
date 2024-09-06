@@ -18,11 +18,6 @@ const config: Config = {
 			primary: '#476db8',
 			secondary: '#8ea7d7',
 			accent: '#7192d1',
-  		},
-  		borderRadius: {
-  			lg: 'var(--radius)',
-  			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
   		}
   	}
   },

@@ -14,7 +14,7 @@ export default function Page() {
 
   return (
     // <BackgroundBeamsWithCollision>
-    <div className="pageWrapper">
+    <div className="pageWrapper ff-space-grotesk">
       <div className="hero | px-12 min-h-svh grid gap-4 auto-rows-fr auto-cols-fr lg:grid-flow-col">
         <div className="content-center">
           <Character/>
