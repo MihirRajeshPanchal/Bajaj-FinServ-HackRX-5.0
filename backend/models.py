@@ -13,12 +13,16 @@ class Slide(BaseModel):
 
 class SlidesRequest(BaseModel):
     presentation_id: str
-    file_path: str
+    topic: str
+    plan: str
+    document: str
     name: Optional[str] = None
     slides: Optional[List[Slide]] = None
     
 class RagRequest(BaseModel):
-    file_path: str
+    topic: str
+    plan: str
+    document: str
     
 class Question(BaseModel):
     questionText: str
@@ -29,9 +33,13 @@ class QuizResponse(BaseModel):
     questions: List[Question]
 
 class QuizRequest(BaseModel):
+    topic: str
+    plan: str
+    document: str
     no_of_questions: int
-    file_path: str
     
 class SlideRequest(BaseModel):
     num_slides: int
-    file_path: str
+    topic: str
+    plan: str
+    document: str

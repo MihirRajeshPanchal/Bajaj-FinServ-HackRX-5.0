@@ -39,9 +39,9 @@ async def create_slides(slides_request: SlidesRequest):
         slides_service = slides_init(creds)
         drive_service = drive_init(creds)
         original_presentation_id = slides_request.presentation_id
-        new_presentation_name = slides_request.file_path
+        new_presentation_name = slides_request.topic + " " + slides_request.plan + " " + slides_request.document
 
-        s3_file_path = f'{slides_request.file_path}/{new_presentation_name}.pptx'
+        s3_file_path = f'{slides_request.topic}/{slides_request.plan}/{slides_request.document}/{new_presentation_name}.pptx'
         try:
             presentation_file = download_from_s3(BajajBucket, s3_file_path)
             return StreamingResponse(
@@ -61,14 +61,14 @@ async def create_slides(slides_request: SlidesRequest):
                 raise HTTPException(status_code=500, detail="Failed to duplicate presentation.")
             
             response = slidetable.get_item(
-                Key={'file_path': slides_request.file_path}
+                Key={'plan': slides_request.plan}
             )
             
             if 'Item' in response:
                 data = json.loads(response['Item']['json_data'])
             else:
-                data = await generate_slide_data(slides_request.file_path)
-                dump_slide_to_dynamodb(slides_request.file_path, data)
+                data = await generate_slide_data(slides_request.plan)
+                dump_slide_to_dynamodb(slides_request.plan, data)
 
             slides_data = data["text"]["slides"]
             slides_list = []
@@ -79,7 +79,7 @@ async def create_slides(slides_request: SlidesRequest):
                 except ValidationError as e:
                     raise HTTPException(status_code=400, detail=f"Invalid slide data: {e}")
 
-            slides_request = slides_request.copy(update={"name": slides_request.file_path})
+            slides_request = slides_request.copy(update={"name": slides_request.plan})
             slides_request = slides_request.copy(update={"slides": slides_list})
             
             for slide_request in slides_request.slides:
@@ -95,7 +95,7 @@ async def create_slides(slides_request: SlidesRequest):
             if not isinstance(presentation_file, BytesIO):
                 raise HTTPException(status_code=500, detail="Failed to export presentation. The returned file is not a BytesIO object.")
 
-            file_path = f'compute/{new_presentation_name}/{new_presentation_name}.pptx'
+            file_path = f'compute/{slides_request.topic}/{slides_request.plan}/{slides_request.document}/{new_presentation_name}.pptx'
             with open(file_path, 'wb') as f:
                 f.write(presentation_file.getvalue())
             s3_buffer = BytesIO(presentation_file.getvalue())
@@ -116,19 +116,19 @@ async def rag_embed(rag_request: RagRequest):
         os.makedirs(compute_directory, exist_ok=True)
         os.makedirs(pdf_directory, exist_ok=True)
         
-        local_embedding_path = os.path.join(compute_directory, f"{os.path.splitext(rag_request.file_path)[0]}/faiss_index/index.faiss")
+        local_embedding_path = os.path.join(compute_directory, f"{rag_request.topic}/{os.path.splitext(rag_request.plan)[0]}/{rag_request.document}/faiss_index/index.faiss")
         
         if os.path.exists(local_embedding_path):
             return {"response": "Embedding already exists locally"}
         
-        s3_prefix = f"{os.path.splitext(rag_request.file_path)[0]}/faiss_index"
+        s3_prefix = f"{rag_request.topic}/{os.path.splitext(rag_request.plan)[0]}/{rag_request.document}/faiss_index"
         try:
-            local_s3_folder_path = os.path.join(compute_directory, f"{os.path.splitext(rag_request.file_path)[0]}/faiss_index")
+            local_s3_folder_path = os.path.join(compute_directory, f"{rag_request.topic}/{os.path.splitext(rag_request.plan)[0]}/{rag_request.document}/faiss_index")
             os.makedirs(local_s3_folder_path, exist_ok=True)
             download_s3_folder(BajajBucket, s3_prefix, local_s3_folder_path)
             return {"response": "Embedding downloaded from S3"}
         except FileNotFoundError:
-            file_path = os.path.join(pdf_directory, rag_request.file_path)
+            file_path = os.path.join(pdf_directory, rag_request.plan)
             
             if not os.path.exists(file_path):
                 raise HTTPException(status_code=404, detail="File not found")
@@ -138,7 +138,7 @@ async def rag_embed(rag_request: RagRequest):
 
             pdf_text = get_pdf_text_from_bytes(pdf_bytes)
             text_chunks = get_text_chunks(pdf_text)
-            vector_store_dir = f'{compute_directory}{os.path.splitext(rag_request.file_path)[0]}/faiss_index'
+            vector_store_dir = f'{compute_directory}{rag_request.topic}/{os.path.splitext(rag_request.plan)[0]}/{rag_request.document}/faiss_index'
             
             get_vector_store(text_chunks, filepath=vector_store_dir)
             upload_folder_to_s3(vector_store_dir, BajajBucket, s3_prefix)
@@ -151,7 +151,7 @@ async def rag_embed(rag_request: RagRequest):
 async def quiz_generate(quiz_request: QuizRequest):
     try:
         response = quiztable.get_item(
-            Key={'file_path': quiz_request.file_path}
+            Key={'plan': quiz_request.plan}
         )
         
         if 'Item' in response:
@@ -177,13 +177,13 @@ async def quiz_generate(quiz_request: QuizRequest):
 
         Ensure the provided JSON adheres to the defined schema.
         '''.format(quiz_request.no_of_questions)
-        answer = user_input(prompt, filepath=f'compute/{quiz_request.file_path}/faiss_index')
-        dump_quiz_to_dynamodb(quiz_request.file_path, answer)
+        answer = user_input(prompt, filepath=f'compute/{quiz_request.topic}/{os.path.splitext(quiz_request.plan)[0]}/{quiz_request.document}/faiss_index')
+        dump_quiz_to_dynamodb(quiz_request.plan, answer)
         return {"answer": answer}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def generate_slide_data(file_path: str) -> Dict[str, Any]:
+async def generate_slide_data(topic: str,plan: str,document:str) -> Dict[str, Any]:
     """
     Function to generate slide data based on file path.
     """
@@ -237,7 +237,7 @@ async def generate_slide_data(file_path: str) -> Dict[str, Any]:
     Ensure the provided JSON adheres to the defined schema and includes detailed voiceover text and bullet points suitable for a PowerPoint presentation.
     '''
 
-    answer = user_input(prompt, filepath=f'compute/{file_path}/faiss_index')
+    answer = user_input(prompt, filepath=f'compute/{topic}/{plan}/{document}/faiss_index')
     for index, slide in enumerate(answer["text"]["slides"], start=1):
         slide["slide_number"] = index
     return answer
@@ -246,15 +246,15 @@ async def generate_slide_data(file_path: str) -> Dict[str, Any]:
 async def slide_generate(slide_request: SlideRequest):
     try:
         response = slidetable.get_item(
-            Key={'file_path': slide_request.file_path}
+            Key={'plan': slide_request.plan}
         )
         
         if 'Item' in response:
             return json.loads(response['Item']['json_data'])
 
-        answer = await generate_slide_data(slide_request.file_path)
+        answer = await generate_slide_data(slide_request.topic,slide_request.plan,slide_request.document)
         
-        dump_slide_to_dynamodb(slide_request.file_path, answer)
+        dump_slide_to_dynamodb(slide_request.plan, answer)
         return answer
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

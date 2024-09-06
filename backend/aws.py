@@ -47,24 +47,24 @@ def store_email_in_dynamodb(email):
     except ClientError as e:
         raise HTTPException(status_code=500, detail=f"Error storing email: {e.response['Error']['Message']}")
 
-def dump_quiz_to_dynamodb(file_path: str, json_data: Dict[str, Any]) -> None:
+def dump_quiz_to_dynamodb(plan: str, json_data: Dict[str, Any]) -> None:
     """
-    Function to dump JSON data to DynamoDB with file_path as the partition key.
+    Function to dump JSON data to DynamoDB with plan as the partition key.
     """
     quiztable.put_item(
         Item={
-            'file_path': file_path,
+            'plan': plan,
             'json_data': json.dumps(json_data)
         }
     )
 
-def dump_slide_to_dynamodb(file_path: str, json_data: Dict[str, Any]) -> None:
+def dump_slide_to_dynamodb(plan: str, json_data: Dict[str, Any]) -> None:
     """
-    Function to dump JSON data to DynamoDB with file_path as the partition key.
+    Function to dump JSON data to DynamoDB with plan as the partition key.
     """
     slidetable.put_item(
         Item={
-            'file_path': file_path,
+            'plan': plan,
             'json_data': json.dumps(json_data)
         }
     )
