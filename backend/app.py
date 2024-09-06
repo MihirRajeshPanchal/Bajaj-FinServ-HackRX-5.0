@@ -13,6 +13,7 @@ from backend.aws import (
     dump_quiz_response_to_dynamodb,
     dump_quiz_to_dynamodb,
     dump_slide_to_dynamodb,
+    get_s3_folder_structure,
     store_email_in_dynamodb,
     quiztable,
     slidetable,
@@ -351,6 +352,12 @@ async def quiz_response(quiz_response_model: QuizResponse):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/frontend_json")
+async def frontend_json():
+    try:
+        return get_s3_folder_structure(BajajBucket)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
 

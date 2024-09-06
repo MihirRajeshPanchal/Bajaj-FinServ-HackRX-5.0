@@ -7,8 +7,19 @@ import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 from backend.constants import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
 from fastapi import HTTPException
-
+import boto3
+from collections import defaultdict
 from backend.models import QuizResponse
+
+
+name_icon_map = {
+    "Brochure": "file-pdf",
+    "Customer Information Sheet": "file-lines",
+    "Policy Wordings": "file-contract",
+    "Proposal Form": "file-pen",
+}
+
+folder_icon = "folder"
 
 dynamodb = boto3.resource(
     "dynamodb",
@@ -187,3 +198,51 @@ def upload_pdf_to_s3(file_path, bucket_name, s3_file_path):
         return {"response": "PDF uploaded to S3"}
     except Exception as e:
         raise Exception(f"Failed to upload PDF to S3: {str(e)}")
+
+
+def should_exclude(name):
+    return "faiss_index" in name or "." in name
+
+
+def get_name_icon(name):
+    return name_icon_map.get(name, folder_icon)
+
+
+def get_s3_folder_structure(bucket_name):
+    response = s3.list_objects_v2(Bucket=bucket_name)
+    if "Contents" not in response:
+        return {"sidebarData": []}
+
+    files = response["Contents"]
+
+    folder_structure = lambda: defaultdict(folder_structure)
+    root = folder_structure()
+
+    for obj in files:
+        path_parts = obj["Key"].split("/")
+        current_level = root
+        for part in path_parts[:-1]:
+            if should_exclude(part):
+                continue
+            current_level = current_level[part]
+
+        if not should_exclude(path_parts[-1]):
+            current_level[path_parts[-1]] = None
+
+    def format_structure(d):
+        output = []
+        for key, value in d.items():
+            if isinstance(value, defaultdict):
+
+                folder_content = format_structure(value)
+                folder_item = {"name": key, "icon": get_name_icon(key)}
+                if folder_content:
+                    folder_item["children"] = folder_content
+                output.append(folder_item)
+            else:
+
+                output.append({"name": key, "icon": get_name_icon(key)})
+        return output
+
+    sidebar_data = format_structure(root)
+    return {"sidebarData": sidebar_data}
