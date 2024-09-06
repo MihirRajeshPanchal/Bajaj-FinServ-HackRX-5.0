@@ -8,84 +8,119 @@ from botocore.exceptions import ClientError, NoCredentialsError
 from backend.constants import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
 from fastapi import HTTPException
 
+from backend.models import QuizResponse
+
 dynamodb = boto3.resource(
-    'dynamodb',
+    "dynamodb",
     aws_access_key_id=AWS_ACCESS_KEY_ID,
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-    region_name=AWS_REGION
+    region_name=AWS_REGION,
 )
 
 s3 = boto3.client(
-    's3',
+    "s3",
     aws_access_key_id=AWS_ACCESS_KEY_ID,
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-    region_name=AWS_REGION
+    region_name=AWS_REGION,
 )
 
 UserTable = "bajaj_user"
 QuizTable = "bajaj_quiz"
 SlideTable = "bajaj_slide"
+QuizResponseTable = "bajaj_quiz_response"
 
 BajajBucket = "bajaj-bucket"
 
 usertable = dynamodb.Table(UserTable)
 quiztable = dynamodb.Table(QuizTable)
 slidetable = dynamodb.Table(SlideTable)
+quizresponsetable = dynamodb.Table(QuizResponseTable)
+
 
 def store_email_in_dynamodb(email):
     """Store the user's email in DynamoDB, avoiding duplicates."""
     try:
         response = usertable.scan(
-            FilterExpression=boto3.dynamodb.conditions.Attr('email').eq(email)
+            FilterExpression=boto3.dynamodb.conditions.Attr("email").eq(email)
         )
-        if response['Items']:
+        if response["Items"]:
             print(f"Email {email} already exists in DynamoDB.")
         else:
             item_id = str(uuid.uuid4())
             usertable.put_item(Item={"id": item_id, "email": email})
             print(f"Stored email {email} in DynamoDB with id {item_id}.")
     except ClientError as e:
-        raise HTTPException(status_code=500, detail=f"Error storing email: {e.response['Error']['Message']}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error storing email: {e.response['Error']['Message']}",
+        )
+
 
 def dump_quiz_to_dynamodb(plan: str, json_data: Dict[str, Any]) -> None:
     """
     Function to dump JSON data to DynamoDB with plan as the partition key.
     """
-    quiztable.put_item(
-        Item={
-            'plan': plan,
-            'json_data': json.dumps(json_data)
-        }
-    )
+    quiztable.put_item(Item={"plan": plan, "json_data": json.dumps(json_data)})
+
 
 def dump_slide_to_dynamodb(plan: str, json_data: Dict[str, Any]) -> None:
     """
     Function to dump JSON data to DynamoDB with plan as the partition key.
     """
-    slidetable.put_item(
+    slidetable.put_item(Item={"plan": plan, "json_data": json.dumps(json_data)})
+
+
+def dump_quiz_response_to_dynamodb(
+    email: str,
+    topic: str,
+    plan: str,
+    document: str,
+    noCorrectResponse: str,
+    noWrongResponse: str,
+) -> None:
+    """
+    Function to dump JSON data to DynamoDB.
+    """
+    quizresponsetable.put_item(
         Item={
-            'plan': plan,
-            'json_data': json.dumps(json_data)
+            "id": email + " " + topic + " " + plan + " " + document,
+            "email": email,
+            "topic": topic,
+            "plan": plan,
+            "document": document,
+            "noCorrectResponse": noCorrectResponse,
+            "noWrongResponse": noWrongResponse,
         }
     )
-    
+
+
 def list_s3_objects(bucket_name: str, prefix: str) -> List[str]:
     """List all objects in an S3 bucket with a given prefix."""
     try:
         objects = []
         response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
-        while response.get('Contents'):
-            objects.extend([obj['Key'] for obj in response['Contents']])
-            if response.get('IsTruncated'):
-                continuation_token = response.get('NextContinuationToken')
-                response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix, ContinuationToken=continuation_token)
+        while response.get("Contents"):
+            objects.extend([obj["Key"] for obj in response["Contents"]])
+            if response.get("IsTruncated"):
+                continuation_token = response.get("NextContinuationToken")
+                response = s3.list_objects_v2(
+                    Bucket=bucket_name,
+                    Prefix=prefix,
+                    ContinuationToken=continuation_token,
+                )
             else:
                 break
         return objects
     except ClientError as e:
-        raise HTTPException(status_code=500, detail=f"Error listing S3 objects: {e.response['Error']['Message']}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error listing S3 objects: {e.response['Error']['Message']}",
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error listing S3 objects: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error listing S3 objects: {str(e)}"
+        )
+
 
 def download_s3_folder(bucket_name: str, s3_folder: str, local_folder: str):
     """Download an entire S3 folder to a local directory."""
@@ -96,6 +131,7 @@ def download_s3_folder(bucket_name: str, s3_folder: str, local_folder: str):
     for s3_key in objects:
         local_file_path = os.path.join(local_folder, os.path.basename(s3_key))
         s3.download_file(bucket_name, s3_key, local_file_path)
+
 
 def upload_folder_to_s3(local_folder: str, bucket_name: str, s3_folder: str):
     """Upload a local folder to an S3 bucket."""
@@ -113,23 +149,41 @@ def upload_folder_to_s3(local_folder: str, bucket_name: str, s3_folder: str):
     except NoCredentialsError:
         raise HTTPException(status_code=500, detail="AWS credentials not found.")
     except ClientError as e:
-        raise HTTPException(status_code=500, detail=f"Error uploading files to S3: {e.response['Error']['Message']}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error uploading files to S3: {e.response['Error']['Message']}",
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error uploading files to S3: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error uploading files to S3: {str(e)}"
+        )
+
 
 def upload_to_s3(file_obj: BytesIO, bucket_name: str, s3_key: str):
     try:
-        file_obj.seek(0) 
+        file_obj.seek(0)
         s3.upload_fileobj(file_obj, bucket_name, s3_key)
         print(f"Uploaded file to s3://{bucket_name}/{s3_key}")
     except ClientError as e:
-        raise HTTPException(status_code=500, detail=f"Error uploading to S3: {e.response['Error']['Message']}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error uploading to S3: {e.response['Error']['Message']}",
+        )
     except NoCredentialsError:
         raise HTTPException(status_code=500, detail="AWS credentials not found.")
-    
+
 
 def download_from_s3(bucket_name: str, s3_key: str) -> BytesIO:
     buffer = BytesIO()
     s3.download_fileobj(bucket_name, s3_key, buffer)
     buffer.seek(0)
     return buffer
+
+
+def upload_pdf_to_s3(file_path, bucket_name, s3_file_path):
+    try:
+        with open(file_path, "rb") as pdf_file:
+            s3.upload_fileobj(pdf_file, bucket_name, s3_file_path)
+        return {"response": "PDF uploaded to S3"}
+    except Exception as e:
+        raise Exception(f"Failed to upload PDF to S3: {str(e)}")

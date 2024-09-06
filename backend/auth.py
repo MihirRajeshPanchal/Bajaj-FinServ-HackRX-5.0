@@ -9,8 +9,9 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/userinfo.email",
     "https://www.googleapis.com/auth/userinfo.profile",
-    "openid"
+    "openid",
 ]
+
 
 def load_credentials():
     """Load user credentials from the token.json file or initiate the OAuth flow."""
@@ -25,19 +26,22 @@ def load_credentials():
         save_credentials(creds)
     return creds
 
+
 def authorize_credentials():
     """Run the OAuth flow to obtain new credentials."""
     flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
     creds = flow.run_local_server(port=0)
     return creds
 
+
 def save_credentials(creds):
     """Save the credentials to the token.json file."""
     with open("token.json", "w") as token:
         token.write(creds.to_json())
 
+
 def get_user_info(creds):
     """Retrieve user information (email) using the People API."""
-    service = build('oauth2', 'v2', credentials=creds)
+    service = build("oauth2", "v2", credentials=creds)
     user_info = service.userinfo().get().execute()
     return user_info

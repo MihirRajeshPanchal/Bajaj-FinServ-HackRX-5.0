@@ -9,6 +9,7 @@ from langchain_community.chat_models import ChatOpenAI
 from langchain.output_parsers.json import SimpleJsonOutputParser
 from langchain.chains import LLMChain
 
+
 def get_pdf_text(pdf_file):
     text = ""
     pdf_reader = PdfReader(pdf_file)
@@ -16,10 +17,11 @@ def get_pdf_text(pdf_file):
         text += page.extract_text()
     return text
 
+
 def get_pdf_text_from_bytes(pdf_bytes):
     text = ""
     pdf_file = io.BytesIO(pdf_bytes)
-    
+
     reader = PdfReader(pdf_file)
     num_pages = len(reader.pages)
     for page_num in range(num_pages):
@@ -27,16 +29,18 @@ def get_pdf_text_from_bytes(pdf_bytes):
         text += page.extract_text()
     return text
 
+
 def get_text_chunks(text):
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=10000, chunk_overlap=1000)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
     chunks = splitter.split_text(text)
-    return chunks  
+    return chunks
+
 
 def get_vector_store(chunks, filepath):
     embeddings = OpenAIEmbeddings()
     vector_store = FAISS.from_texts(chunks, embedding=embeddings)
     vector_store.save_local(filepath)
+
 
 def get_conversational_chain():
     prompt_template = """
@@ -47,25 +51,24 @@ def get_conversational_chain():
 
     Answer:
     """
-    prompt = PromptTemplate(template=prompt_template,
-                            input_variables=["context", "question"])
-    model = ChatOpenAI(temperature=0.5)
-    chain = LLMChain(
-        llm=model,
-        prompt=prompt,
-        output_parser=SimpleJsonOutputParser()
+    prompt = PromptTemplate(
+        template=prompt_template, input_variables=["context", "question"]
     )
+    model = ChatOpenAI(temperature=0.5)
+    chain = LLMChain(llm=model, prompt=prompt, output_parser=SimpleJsonOutputParser())
     return chain
+
 
 def user_input(user_question, filepath):
     embeddings = OpenAIEmbeddings()
-    new_db = FAISS.load_local(filepath, embeddings, allow_dangerous_deserialization=True)
+    new_db = FAISS.load_local(
+        filepath, embeddings, allow_dangerous_deserialization=True
+    )
     docs = new_db.similarity_search(user_question)
     chain = get_conversational_chain()
     context = "\n".join([doc.page_content for doc in docs])
-    
-    response = chain({
-        "context": context,
-        "question": user_question
-    }, return_only_outputs=True)
+
+    response = chain(
+        {"context": context, "question": user_question}, return_only_outputs=True
+    )
     return response
