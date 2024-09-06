@@ -38,9 +38,9 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ item, path = [] }) => {
 
   return (
     <li className={`${!hasChildren ? "fileNoChild | grid gap-1 grid-cols-[2px_1fr]" : "mt-2"}`}>
-      {!hasChildren && <div className={`bg-primary ${!isActive && "bg-opacity-50"} transition-colors`}></div>}
+      {!hasChildren && <div className={`bg-accent ${!isActive && "bg-opacity-50"} transition-colors`}></div>}
       <Link href={href}
-        className={`flex items-center gap-1.5 p-2 text-gray-300 srounded-lg hover:bg-[hsl(260,100%,83%)] group ${isActive && "bg-[hsl(260,100%,83%)]"} ${hasChildren ? 'font-bold' : 'text-sm m-0.5'}`}
+        className={`flex items-center gap-1.5 p-2 text-gray-300 srounded-lg hover:bg-[hsl(260,100%,83%)] group ${isActive && "bg-secondary bg-opacity-20"} ${hasChildren ? 'font-bold' : 'text-sm m-0.5'}`}
         onClick={(e) => {
           if (hasChildren) {
             e.preventDefault();
@@ -78,7 +78,7 @@ export type SidebarProps = {
 
 const Sidebar: React.FC<SidebarProps> = ({ data }) => {
   return (
-    <aside id="logo-sidebar" className="~bg-[hsl(260,100%,93%)] pt-14 h-screen overflow-hidden shadow-md" aria-label="Sidebar">
+    <aside id="logo-sidebar" className="~bg-[hsl(260,100%,93%)] pt-14 h-screen overflow-hidden shadow-md sticky top-0" aria-label="Sidebar">
       <div className="scrollbar | h-full overflow-y-auto p-3">
         <ul className="space-y-2 font-medium">
           {data.map((item, index) => (

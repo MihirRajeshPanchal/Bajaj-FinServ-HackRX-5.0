@@ -18,7 +18,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ content }) => {
   const toc = ["summary", "video", "transcript", "quiz"];
 
   return (
-    <div className="w-64 fixed top-24 right-8 rounded-lg">
+    <div className="hidden lg:block h-fit sticky top-14 py-14 px-4 xl:px-14">
       <h2 className={cn("text-xl font-bold mb-4", font.className)}>Table of Contents</h2>
       <ul className="space-y-2">
         {toc.map((item, index) => (
