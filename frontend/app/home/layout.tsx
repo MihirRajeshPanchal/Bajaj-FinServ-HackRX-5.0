@@ -1,5 +1,5 @@
 "use client"
-import { Navbar } from './_components/Navbar';
+import { Navbar } from '../../components/Navbar';
 import React from 'react';
 import SidebarData from './_components/sidebarData';
 

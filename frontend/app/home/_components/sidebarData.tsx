@@ -3,7 +3,7 @@ import Sidebar from './Sidebar';
 import { SidebarItemData } from './Sidebar';
 
 async function fetchSidebarData(): Promise<SidebarItemData[]> {
-    const res = await fetch("http://127.0.0.1:8000/frontend_json");
+    const res = await fetch("http://127.0.0.1:8000/frontend_sidebar_json");
     if (!res.ok) {
       throw new Error('Failed to fetch sidebar data');
     }
