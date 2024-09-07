@@ -90,12 +90,12 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
   const currentQuestion = questions[currentQuestionIndex];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center font-sans p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center font-sans p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-gray-800 rounded-lg shadow-2xl p-8 max-w-2xl w-full border border-gray-700"
+        className="bg-secondary rounded-lg shadow-2xl p-8 max-w-2xl w-full border border-gray-700"
       >
         <div className="flex justify-between items-center mb-6">
           <h1 className="bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 rounded-full font-bold text-white">

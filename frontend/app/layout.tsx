@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Navbar } from "./home/_components/Navbar";
+import GridBackground from "@/components/ui/GridBackground";
+import { usePathname } from "next/navigation";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +19,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-svh`}>{children}</body>
+      <body className={`${inter.className} min-h-svh grid *:[grid-area:1/-1]`}>
+        <GridBackground/>
+        <Navbar/>
+        <div className="pt-14 lg:pt-0 z-10">
+        {children}
+        </div>
+      </body>
     </html>
   );
 }
