@@ -8,7 +8,7 @@ function capitalizeWords(str: string) {
   export async function getQuiz(slug: string[]) {
     const [topic, plan, document] = slug.map(capitalizeWords);
     console.log(topic, plan, document);
-    const response = await fetch('http://127.0.0.1:8000/quiz_generate', {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz_generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
