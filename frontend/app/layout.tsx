@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "./home/_components/Navbar";
+import { Navbar } from "@/components/Navbar";
 import GridBackground from "@/components/ui/GridBackground";
 import { usePathname } from "next/navigation";
 
