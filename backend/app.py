@@ -13,9 +13,11 @@ from backend.aws import (
     dump_quiz_response_to_dynamodb,
     dump_quiz_to_dynamodb,
     dump_slide_to_dynamodb,
+    dump_summary_to_dynamodb,
     get_s3_folder_structure,
     store_email_in_dynamodb,
     quiztable,
+    summarytable,
     slidetable,
     upload_folder_to_s3,
     upload_pdf_to_s3,
@@ -24,12 +26,14 @@ from backend.aws import (
 from backend.constants import APP_NAME
 from backend.auth import get_user_info, load_credentials
 from backend.models import (
+    FrontendJson,
     QuizRequest,
     QuizResponse,
     RagRequest,
     SlideRequest,
     SlidesRequest,
     Slide,
+    SummaryRequest,
 )
 from backend.rag import (
     get_pdf_text_from_bytes,
@@ -347,6 +351,46 @@ async def slide_generate(slide_request: SlideRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+async def generate_summary_data(topic: str, plan: str, document: str) -> Dict[str, Any]:
+    """
+    Function to generate summary data based on file path.
+    """
+    prompt = f"""
+    Please analyze the document and generate a JSON summary with the following format:
+
+    {{
+        "summary": "Provide a clear and concise summary of the document here. The summary should be engaging and suitable for someone who has not read the document. It should include key points and essential information from the document."
+    }}
+
+    Ensure the JSON is valid and properly formatted. The output should be a single JSON object with a "summary" field containing the text summary of the document.
+    """
+
+    answer = user_input(
+        prompt, filepath=f"compute/{topic}/{plan}/{document}/faiss_index"
+    )
+    return answer
+
+@app.post("/summary_generate")
+async def summary_generate(summary_request: SummaryRequest):
+    try:
+        response = summarytable.get_item(
+            Key={"plan": str(summary_request.plan + " " + summary_request.document)}
+        )
+
+        if "Item" in response:
+            return json.loads(response["Item"]["json_data"])
+
+        answer = await generate_summary_data(
+            summary_request.topic, summary_request.plan, summary_request.document
+        )
+
+        dump_summary_to_dynamodb(
+            str(summary_request.plan + " " + summary_request.document), answer
+        )
+        return answer
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/quiz_response")
 async def quiz_response(quiz_response_model: QuizResponse):
@@ -363,10 +407,39 @@ async def quiz_response(quiz_response_model: QuizResponse):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/frontend_json")
-async def frontend_json():
+@app.get("/frontend_sidebar_json")
+async def frontend_sidebar_json():
     try:
         return get_s3_folder_structure(BajajBucket)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/frontend_json")
+async def frontend_json(frontend_model: FrontendJson):
+    resdict={}
+    try:
+        response = slidetable.get_item(
+        Key={"plan": str(frontend_model.plan + " " + frontend_model.document)}
+        )
+        if "Item" in response:
+            resdict["slides"] = json.loads(response["Item"]["json_data"])
+        
+        response = quiztable.get_item(
+            Key={"plan": str(frontend_model.plan + " " + frontend_model.document)}
+        )
+
+        if "Item" in response:
+            resdict["quiz"] = json.loads(response["Item"]["json_data"])
+            
+        response = summarytable.get_item(
+            Key={"plan": str(frontend_model.plan + " " + frontend_model.document)}
+        )
+
+        if "Item" in response:
+            resdict["summary"] = json.loads(response["Item"]["json_data"])
+            
+        return resdict
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

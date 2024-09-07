@@ -50,3 +50,13 @@ class SlideRequest(BaseModel):
     topic: str
     plan: str
     document: str
+
+class SummaryRequest(BaseModel):
+    topic: str
+    plan: str
+    document: str
+    
+class FrontendJson(BaseModel):
+    topic: str
+    plan: str
+    document: str

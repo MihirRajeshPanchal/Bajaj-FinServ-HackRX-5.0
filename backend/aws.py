@@ -39,6 +39,7 @@ UserTable = "bajaj_user"
 QuizTable = "bajaj_quiz"
 SlideTable = "bajaj_slide"
 QuizResponseTable = "bajaj_quiz_response"
+SummaryTable = "bajaj_summary"
 
 BajajBucket = "bajaj-bucket"
 
@@ -46,7 +47,7 @@ usertable = dynamodb.Table(UserTable)
 quiztable = dynamodb.Table(QuizTable)
 slidetable = dynamodb.Table(SlideTable)
 quizresponsetable = dynamodb.Table(QuizResponseTable)
-
+summarytable = dynamodb.Table(SummaryTable)
 
 def store_email_in_dynamodb(email):
     """Store the user's email in DynamoDB, avoiding duplicates."""
@@ -79,6 +80,12 @@ def dump_slide_to_dynamodb(plan: str, json_data: Dict[str, Any]) -> None:
     Function to dump JSON data to DynamoDB with plan as the partition key.
     """
     slidetable.put_item(Item={"plan": plan, "json_data": json.dumps(json_data)})
+    
+def dump_summary_to_dynamodb(plan: str, json_data: Dict[str, Any]) -> None:
+    """
+    Function to dump JSON data to DynamoDB with plan as the partition key.
+    """
+    summarytable.put_item(Item={"plan": plan, "json_data": json.dumps(json_data)})
 
 
 def dump_quiz_response_to_dynamodb(
