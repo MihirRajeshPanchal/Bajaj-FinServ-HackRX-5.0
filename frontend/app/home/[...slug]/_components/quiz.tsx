@@ -1,13 +1,16 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+
+type Question = {
+  questionText: string;
+  questionOptions: string[];
+  questionAnswerIndex: number;
+};
 
 type QuizProps = {
-  questions: {
-    questionText: string;
-    questionOptions: string[];
-    questionAnswerIndex: number;
-  }[];
+  questions: Question[];
 };
 
 const Quiz: React.FC<QuizProps> = ({ questions }) => {
@@ -17,13 +20,24 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
   const [timeLeft, setTimeLeft] = useState(30);
   const [quizFinished, setQuizFinished] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
+  const router = useRouter(); 
 
   useEffect(() => {
-    if (timeLeft > 0 && !showAnswer) {
-      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && !showAnswer) {
-      setShowAnswer(true);
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime > 0 && !showAnswer) {
+          return prevTime - 1;
+        }
+        return prevTime;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [showAnswer]);
+
+  useEffect(() => {
+    if (timeLeft === 0 && !showAnswer) {
+      handleSubmitAnswer();
     }
   }, [timeLeft, showAnswer]);
 
@@ -35,26 +49,28 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
 
   const handleSubmitAnswer = () => {
     setShowAnswer(true);
+    const currentQuestion = questions[currentQuestionIndex];
     if (
-      selectedOption ===
-      questions[currentQuestionIndex].questionOptions[
-        questions[currentQuestionIndex].questionAnswerIndex
-      ]
+      selectedOption === currentQuestion.questionOptions[currentQuestion.questionAnswerIndex]
     ) {
-      setScore(score + 1);
+      setScore((prevScore) => prevScore + 1);
     }
 
-    setTimeout(() => {
-      if (currentQuestionIndex === questions.length - 1) {
-        setQuizFinished(true);
-      } else {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
-        setSelectedOption(null);
-        setTimeLeft(30);
-        setShowAnswer(false);
-      }
-    }, 200);
+    setTimeout(moveToNextQuestion, 1000);
   };
+
+  const moveToNextQuestion = () => {
+    if (currentQuestionIndex === questions.length - 1) {
+      setQuizFinished(true);
+    } else {
+      setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
+      setSelectedOption(null);
+      setTimeLeft(30);
+      setShowAnswer(false);
+    }
+  };
+
+  
 
   if (quizFinished) {
     return (
@@ -78,10 +94,10 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
           </motion.div>
         )}
         <button
-          onClick={() => window.location.reload()}
+          onClick={() => router.push('/home')}
           className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-blue-600 hover:to-purple-700 transition duration-300 shadow-lg"
         >
-          Restart Quiz
+          Back to home
         </button>
       </motion.div>
     );
@@ -99,9 +115,9 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
       >
         <div className="flex justify-between items-center mb-6">
           <h1 className="bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 rounded-full font-bold text-white">
-            Question {currentQuestionIndex + 1}
+            Question {currentQuestionIndex + 1}/{questions.length}
           </h1>
-          <p className="text-blue-400">Score: {score}</p>
+          <p className="text-black-400">Score: {score}</p>
         </div>
         <h2 className="text-2xl font-semibold text-white mb-6">
           {currentQuestion.questionText}
@@ -121,10 +137,7 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
                   : "bg-gray-700 text-gray-200 hover:bg-gray-600"
               } ${
                 showAnswer
-                  ? option ===
-                    currentQuestion.questionOptions[
-                      currentQuestion.questionAnswerIndex
-                    ]
+                  ? option === currentQuestion.questionOptions[currentQuestion.questionAnswerIndex]
                     ? "bg-green-500 text-white"
                     : selectedOption === option
                     ? "bg-red-500 text-white"
@@ -138,17 +151,15 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
         </div>
         <div className="flex justify-between items-center">
           <p className="text-blue-400">Time left: {timeLeft} seconds</p>
-          {selectedOption && (
-            <motion.button
-              onClick={handleSubmitAnswer}
-              disabled={!selectedOption}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-blue-600 hover:to-purple-700 transition duration-300 disabled:opacity-50 shadow-lg"
-            >
-              Submit Answer
-            </motion.button>
-          )}
+          <motion.button
+            onClick={handleSubmitAnswer}
+            disabled={!selectedOption && !showAnswer}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-blue-600 hover:to-purple-700 transition duration-300 disabled:opacity-50 shadow-lg"
+          >
+            {showAnswer ? 'Next Question' : 'Submit Answer'}
+          </motion.button>
         </div>
       </motion.div>
     </div>

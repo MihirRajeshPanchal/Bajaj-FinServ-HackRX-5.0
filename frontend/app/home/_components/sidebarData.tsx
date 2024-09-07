@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+
 import Sidebar from './Sidebar';
 import { SidebarItemData } from './Sidebar';
 
@@ -14,9 +14,7 @@ async function fetchSidebarData(): Promise<SidebarItemData[]> {
 export default async function SidebarData() {
     const sidebarData = await fetchSidebarData();
     return (
-    <Suspense fallback={<div>Loading...</div>}>
      <Sidebar data={sidebarData} />
-    </Suspense>
 
   );
 }

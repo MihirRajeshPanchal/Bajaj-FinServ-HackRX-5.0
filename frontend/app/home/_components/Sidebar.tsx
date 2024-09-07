@@ -13,7 +13,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { ChevronDown, Folder, ChevronRight, File } from 'lucide-react';
 import Link from 'next/link';
-import { div } from 'framer-motion/client';
 import { usePathname } from 'next/navigation';
 
 export type SidebarItemData = {

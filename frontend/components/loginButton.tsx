@@ -41,6 +41,7 @@ const LoginButton = () => {
           console.error('Authentication failed');
         }
       } catch (error) {
+        toast.error('Authentication failed');
         console.error('Error during authentication:', error);
       }
     }
