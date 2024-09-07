@@ -4,7 +4,8 @@ const Page = () => {
     
     return (
         <div>
-            <Quiz />
+            {/* <Quiz /> */}
+            hi lol
         </div>
     );
     }

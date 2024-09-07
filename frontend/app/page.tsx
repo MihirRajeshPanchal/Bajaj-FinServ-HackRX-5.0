@@ -1,8 +1,7 @@
 "use client"
 import {  useRouter } from "next/navigation";
 import {  useState } from "react";
-import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collisions";
-import Character from "@/components/ui/Character";
+// import Character from "@/components/ui/Character";
 
 export default function Page() {
   const router = useRouter();
@@ -22,7 +21,7 @@ export default function Page() {
             <div className="absolute w-full h-full rounded-full bg-accent blur-[70px] -translate-y-1/2 -translate-x-1/2"></div>
             <div className="absolute w-full h-full rounded-full bg-accent blur-[70px] -translate-y-1/2 translate-x-1/2"></div>
           </div>
-          <Character/>
+          {/* <Character/> */}
         </div>
         <div className="col-start-1 grid content-start lg:content-center">
           <h1 className="leading-tight text-[clamp(3rem,8.6vw_+_1px,7.5rem)] font-bold">Heading,
