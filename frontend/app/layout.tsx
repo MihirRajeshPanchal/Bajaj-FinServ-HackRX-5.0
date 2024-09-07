@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import GridBackground from "@/components/ui/GridBackground";
-import { usePathname } from "next/navigation";
 
-const inter = Inter({ subsets: ["latin"] });
+const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
   title: "Take a Quiz!",
@@ -19,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-svh grid *:[grid-area:1/-1]`}>
+      <body className={`${poppins.className} min-h-svh grid *:[grid-area:1/-1]`}>
         <GridBackground/>
         <Navbar/>
         <div className="pt-14 lg:pt-0 z-10">

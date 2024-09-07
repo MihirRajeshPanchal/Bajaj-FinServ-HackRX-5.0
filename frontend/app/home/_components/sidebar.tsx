@@ -79,6 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({ data }) => {
   return (
     <aside id="logo-sidebar" className="~bg-[hsl(260,100%,93%)] pt-14 h-screen overflow-hidden shadow-md sticky top-0" aria-label="Sidebar">
       <div className="scrollbar | h-full overflow-y-auto p-3">
+        <Link href="/home">Home</Link>
         <ul className="space-y-2 font-medium">
           {data.map((item, index) => (
             <SidebarItem key={index} item={item} />
