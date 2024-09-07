@@ -7,6 +7,7 @@ import TableOfContents from "./_components/tableOfContents";
 import QuizButton from "./_components/quizButton";
 import Quiz from "./_components/quiz";
 import { getQuiz } from "../../api/getQuiz";
+import SidebarData from "../_components/sidebarData";
 
 type PageData = {
   title: string;
@@ -51,6 +52,7 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
 
   return (
     <div className="grid grid-flow-col gap-4 pt-14">
+      {/* <SidebarData /> */}
       <div className="py-16 px-[clamp(2rem,3.125vw,4rem)]">
         <p className={cn("text-sm text-gray-500 mb-2", font.className)}>{context}</p>
         <h1 className={cn("text-4xl font-bold mb-6", font.className)}>{pageData.title}</h1>
