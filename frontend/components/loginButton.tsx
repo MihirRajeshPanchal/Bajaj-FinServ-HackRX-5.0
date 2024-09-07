@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { setCookie, getCookie, deleteCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
+import { toast, Toaster } from 'sonner';
 
 const LoginButton = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -15,6 +16,7 @@ const LoginButton = () => {
   const handleAuth = async () => {
     if (isAuthenticated) {
       deleteCookie('email');
+      toast.success('Logged out');
       setIsAuthenticated(false);
     } else {
       try {
@@ -30,6 +32,7 @@ const LoginButton = () => {
         const data = await response.json();
 
         if (data.response === "Authorization Successful") {
+            toast.success('Authentication successful');
           setCookie('email', data.email);
           setIsAuthenticated(true);
           router.push('/home');
@@ -44,12 +47,17 @@ const LoginButton = () => {
   };
 
   return (
+    <div>
+
+    
+    <Toaster />
     <button
       onClick={handleAuth}
       className="py-1 px-6 bg-accent font-medium text-text shadow-[4px_4px_black] -translate-x-0.5 -translate-y-0.5 hover:translate-x-0 hover:translate-y-0 hover:shadow-[0px_0px_black] transition-[transform,box-shadow]"
     >
       {isAuthenticated ? 'Logout' : 'Login'}
     </button>
+    </div>
   );
 };
 

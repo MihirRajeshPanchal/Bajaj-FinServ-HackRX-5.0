@@ -3,7 +3,7 @@
 import React from "react";
 import { ChevronDown, ChevronUp, Copy } from "lucide-react";
 import { Hint } from "@/components/hint";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 
 type TranscriptSectionProps = {
@@ -28,6 +28,7 @@ const TranscriptSection: React.FC<TranscriptSectionProps> = ({ transcript }) => 
 
   return (
     <div className="mt-8 border-t pt-4">
+      <Toaster />
       <Button 
         onClick={() => setIsExpanded(!isExpanded)}
         variant="board"
@@ -40,6 +41,7 @@ const TranscriptSection: React.FC<TranscriptSectionProps> = ({ transcript }) => 
           <p>{transcript}</p>
           <div className="absolute top-2 right-2">
             <Hint label="Copy transcript" side="bottom" align="center" sideOffset={18}>
+              
               <Button 
                 onClick={handleCopy} 
                 variant="outline"
