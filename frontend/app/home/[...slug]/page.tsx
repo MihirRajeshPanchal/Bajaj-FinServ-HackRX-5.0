@@ -7,7 +7,6 @@ import TableOfContents from "./_components/tableOfContents";
 import QuizButton from "./_components/quizButton";
 import Quiz from "./_components/quiz";
 import { getQuiz } from "../../api/getQuiz";
-import SidebarData from "../_components/sidebarData";
 import { getPageData } from "@/app/api/getPagedData";
 
 const font = Space_Mono({
