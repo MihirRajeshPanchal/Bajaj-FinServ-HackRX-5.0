@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
-import { Space_Mono } from 'next/font/google';
-import { cn } from '@/lib/utils';
+import React, { useEffect, useState } from "react";
+import { Space_Mono } from "next/font/google";
+import { cn } from "@/lib/utils";
 
 type TableOfContentsProps = {
   content: string;
@@ -14,16 +14,47 @@ const font = Space_Mono({
 });
 
 const TableOfContents: React.FC<TableOfContentsProps> = ({ content }) => {
-  // This is a simple implementation. Adjust it as per your content structure.
-  const toc = ["summary", "video", "transcript", "quiz"];
+  const toc = React.useMemo(() => ["Introduction", "Video", "Transcript", "Quiz"], []);
+
+  const [currentSection, setCurrentSection] = useState<string>("");
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = toc.map((item) =>
+        document.getElementById(item.toLowerCase())
+      );
+
+      const offset = 100; 
+      const scrollPosition = window.scrollY + offset;
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const section = sections[i];
+        if (section && section.offsetTop <= scrollPosition) {
+          setCurrentSection(toc[i]);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [toc]);
 
   return (
     <div className="hidden lg:block h-fit sticky top-14 py-14 px-4 xl:px-14">
-      <h2 className={cn("text-xl font-bold mb-4", font.className)}>Table of Contents</h2>
+      <h2 className={cn("text-xl font-bold mb-4", font.className)}>
+        Table of Contents
+      </h2>
       <ul className="space-y-2">
         {toc.map((item, index) => (
           <li key={index}>
-            <a href={`#${item.toLowerCase().replace(/\s+/g, '-')}`} className="text-blue-500 hover:text-blue-700">
+            <a
+              href={`#${item.toLowerCase()}`}
+              className={cn(
+                "text-blue-500 hover:text-blue-700 transition duration-300",
+                currentSection === item ? "border-l-4 border-primary pl-2" : ""
+              )}
+            >
               {item}
             </a>
           </li>

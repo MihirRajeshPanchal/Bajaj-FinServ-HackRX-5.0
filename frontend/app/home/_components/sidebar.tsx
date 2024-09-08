@@ -39,7 +39,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ item, path = [] }) => {
     <li className={`${!hasChildren ? "fileNoChild | grid gap-1 grid-cols-[2px_1fr]" : "mt-2"}`}>
       {!hasChildren && <div className={`bg-accent ${!isActive && "bg-opacity-50"} transition-colors`}></div>}
       <Link href={href}
-        className={`flex items-center gap-1.5 p-2 text-gray-300 rounded-lg !bg-opacity-30 hover:bg-accent group ${isActive && "bg-accent"} ${hasChildren ? 'font-bold' : 'text-sm m-0.5'}`}
+        className={`flex items-center gap-1.5 p-2 text-gray-300 rounded-lg !bg-opacity-30 hover:bg-accent group ${isActive && "bg-accent"} ${hasChildren ? 'font-medium' : 'text-sm m-0.5'}`}
         onClick={(e) => {
           if (hasChildren) {
             e.preventDefault();
@@ -78,9 +78,11 @@ export type SidebarProps = {
 const Sidebar: React.FC<SidebarProps> = ({ data }) => {
   return (
     <aside id="logo-sidebar" className="~bg-[hsl(260,100%,93%)] pt-14 h-screen overflow-hidden shadow-md sticky top-0" aria-label="Sidebar">
+      <div className='px-3 pt-8'>
+        <Link href="/home" className='block py-2 px-4 rounded-md font-semibold text-[hsl(260,100%,30%)] bg-inherit hover:bg-primary hover:text-black transition-colors duration-300 ease-in-out'>Home</Link>
+      </div>
       <div className="scrollbar | h-full overflow-y-auto p-3">
-        <Link href="/home">Home</Link>
-        <ul className="space-y-2 font-medium">
+        <ul className="space-y-4 font-medium">
           {data.map((item, index) => (
             <SidebarItem key={index} item={item} />
           ))}
