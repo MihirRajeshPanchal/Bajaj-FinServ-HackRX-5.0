@@ -14,3 +14,5 @@ langchain
 PyPDF2
 faiss-cpu
 pyttsx3
+moviepy
+pdf2image
