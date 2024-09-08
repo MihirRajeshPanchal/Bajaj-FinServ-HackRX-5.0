@@ -7,7 +7,7 @@ import GridBackground from "@/components/ui/GridBackground";
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
-  title: "Take a Quiz!",
+  title: "Bajaj Kratos",
   description: "made by some really cool people",
 };
 

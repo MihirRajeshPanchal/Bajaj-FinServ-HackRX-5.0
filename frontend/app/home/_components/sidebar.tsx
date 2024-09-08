@@ -11,7 +11,7 @@ import {
   faFilePen,
   faFileShield
 } from '@fortawesome/free-solid-svg-icons';
-import { ChevronDown, Folder, ChevronRight, File } from 'lucide-react';
+import { ChevronDown, Folder, ChevronRight, File, FileText  } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -53,7 +53,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ item, path = [] }) => {
             {isOpen ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
           </span>
         )}
-        {hasChildren ? <Folder className="h-full p-0.5" /> : <File className="h-5 p-0.5 pe-0" />}
+        {hasChildren ? <Folder className="h-full p-0.5" /> : <FileText className="h-5 p-0.5 pe-0" />}
         <span className="flex-1 whitespace-nowrap">{item.name}</span>
       </Link>
       {hasChildren &&
