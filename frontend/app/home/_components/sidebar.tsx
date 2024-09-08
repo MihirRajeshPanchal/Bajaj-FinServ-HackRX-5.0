@@ -79,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({ data }) => {
   return (
     <aside id="logo-sidebar" className="~bg-[hsl(260,100%,93%)] pt-14 h-screen overflow-hidden shadow-md sticky top-0" aria-label="Sidebar">
       <div className='px-3 pt-8'>
-        <Link href="/home" className='block py-2 px-4 rounded-md font-semibold text-[hsl(260,100%,30%)] bg-[hsl(260,84%,85%)] hover:text-black transition-colors duration-300 ease-in-out'>Home</Link>
+        <Link href="/home" className='block py-2 px-4 rounded-md font-semibold text-[hsl(260,100%,30%)] bg-inherit hover:bg-primary hover:text-black transition-colors duration-300 ease-in-out'>Home</Link>
       </div>
       <div className="scrollbar | h-full overflow-y-auto p-3">
         <ul className="space-y-4 font-medium">

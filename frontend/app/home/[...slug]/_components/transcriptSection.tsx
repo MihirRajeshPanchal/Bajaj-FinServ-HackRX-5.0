@@ -42,12 +42,12 @@ const TranscriptSection: React.FC<TranscriptSectionProps> = ({ transcript }) => 
           <div className="absolute top-2 right-2">
             <Hint label="Copy transcript" side="bottom" align="center" sideOffset={18}>
               
-              <Button 
+              <button 
                 onClick={handleCopy} 
-                variant="outline"
+                className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
               >
                 <Copy size={16} />
-              </Button>
+              </button>
             </Hint>
           </div>
         </div>
