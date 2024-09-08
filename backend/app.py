@@ -22,6 +22,7 @@ from backend.aws import (
     upload_folder_to_s3,
     upload_pdf_to_s3,
     upload_to_s3,
+    upload_video_to_s3,
 )
 from backend.constants import APP_NAME
 from backend.auth import get_user_info, load_credentials
@@ -34,6 +35,7 @@ from backend.models import (
     SlidesRequest,
     Slide,
     SummaryRequest,
+    VideoRequest,
 )
 from backend.rag import (
     get_pdf_text_from_bytes,
@@ -46,6 +48,15 @@ from backend.utils import copy_presentation, drive_init, export_presentation
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
+from backend.video import (
+    convert_pdf_to_images,
+    create_slide_videos,
+    generate_voiceovers,
+    init_text_to_speech_engine,
+    ppt_to_pdf,
+    save_final_presentation,
+)
+
 app = FastAPI()
 os.makedirs("compute", exist_ok=True)
 
@@ -56,6 +67,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/")
 async def app_init():
@@ -348,6 +360,7 @@ async def slide_generate(slide_request: SlideRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 async def generate_summary_data(topic: str, plan: str, document: str) -> Dict[str, Any]:
     """
     Function to generate summary data based on file path.
@@ -366,6 +379,7 @@ async def generate_summary_data(topic: str, plan: str, document: str) -> Dict[st
         prompt, filepath=f"compute/{topic}/{plan}/{document}/faiss_index"
     )
     return answer
+
 
 @app.post("/summary_generate")
 async def summary_generate(summary_request: SummaryRequest):
@@ -404,6 +418,7 @@ async def quiz_response(quiz_response_model: QuizResponse):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/frontend_sidebar_json")
 async def frontend_sidebar_json():
     try:
@@ -411,34 +426,85 @@ async def frontend_sidebar_json():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/frontend_json")
 async def frontend_json(frontend_model: FrontendJson):
-    resdict={}
+    resdict = {}
     try:
         response = slidetable.get_item(
-        Key={"plan": str(frontend_model.plan + " " + frontend_model.document)}
+            Key={"plan": str(frontend_model.plan + " " + frontend_model.document)}
         )
         if "Item" in response:
             resdict["slides"] = json.loads(response["Item"]["json_data"])
-        
+
         response = quiztable.get_item(
             Key={"plan": str(frontend_model.plan + " " + frontend_model.document)}
         )
 
         if "Item" in response:
             resdict["quiz"] = json.loads(response["Item"]["json_data"])
-            
+
         response = summarytable.get_item(
             Key={"plan": str(frontend_model.plan + " " + frontend_model.document)}
         )
 
         if "Item" in response:
             resdict["summary"] = json.loads(response["Item"]["json_data"])
-            
+
         return resdict
-    
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/create_video")
+async def create_video(video_model: VideoRequest):
+    response = slidetable.get_item(
+        Key={"plan": str(video_model.plan + " " + video_model.document)}
+    )
+    if "Item" in response:
+        slides = json.loads(response["Item"]["json_data"])
+    slides = slides["text"]["slides"]
+    s3_file_path = f"{video_model.topic}/{video_model.plan}/{video_model.document}/"
+    new_presentation_name = (
+        video_model.topic + " " + video_model.plan + " " + video_model.document
+    )
+    presentation_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pptx")
+    
+    with open("compute/" + s3_file_path + f"{new_presentation_name}.pptx", "wb") as f:
+        f.write(presentation_file.getvalue())
+
+    ppt_path = "compute/" + s3_file_path + f"{new_presentation_name}.pptx"
+    pdf_path = "compute/" + s3_file_path + f"{new_presentation_name}.pdf"
+    print(ppt_path)
+    
+    if not os.path.exists(ppt_path):
+        print("Error: File does not exist.")
+    else:
+        absolute_ppt_path = os.path.abspath(ppt_path)
+        absolute_pdf_path = os.path.abspath(pdf_path)
+        ppt_to_pdf(absolute_ppt_path, absolute_pdf_path)
+
+    engine = init_text_to_speech_engine()
+
+    save_path = "compute/" + s3_file_path
+
+    generate_voiceovers(slides, engine, save_path + "voiceovers")
+
+    image_paths = convert_pdf_to_images(
+        pdf_path, save_path + "images"
+    )
+
+    slide_videos = create_slide_videos(slides, image_paths, save_path + "voiceovers")
+
+    save_final_presentation(
+        slide_videos,
+        f"compute/{s3_file_path}{video_model.topic} {video_model.plan} {video_model.document}.mp4",
+    )
+    final_video_path = f"compute/{s3_file_path}{video_model.topic} {video_model.plan} {video_model.document}.mp4"
+    s3_key = f"{video_model.topic}/{video_model.plan}/{video_model.document}/{new_presentation_name}.mp4"
+    video_url = upload_video_to_s3(final_video_path, BajajBucket, s3_key)
+    return {"video_url": video_url}
 
 if __name__ == "__main__":
 

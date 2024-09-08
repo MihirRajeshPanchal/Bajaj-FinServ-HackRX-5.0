@@ -253,3 +253,23 @@ def get_s3_folder_structure(bucket_name):
 
     sidebar_data = format_structure(root)
     return {"sidebarData": sidebar_data}
+
+def upload_video_to_s3(file_path, bucket_name, s3_key):
+    """Upload a file to S3 and make it publicly accessible."""
+    try:
+        s3.upload_file(
+            file_path, 
+            bucket_name, 
+            s3_key, 
+            ExtraArgs={
+                'ContentDisposition': 'inline',
+                'ContentType': 'video/mp4'
+            }
+        )
+        print(f"File uploaded to S3: s3://{bucket_name}/{s3_key}")
+        s3_url = f"https://{bucket_name}.s3.amazonaws.com/{s3_key}"
+        return s3_url
+    except FileNotFoundError:
+        print("The file was not found")
+    except NoCredentialsError:
+        print("Credentials not available")

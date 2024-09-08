@@ -60,3 +60,8 @@ class FrontendJson(BaseModel):
     topic: str
     plan: str
     document: str
+    
+class VideoRequest(BaseModel):
+    topic: str
+    plan: str
+    document: str
