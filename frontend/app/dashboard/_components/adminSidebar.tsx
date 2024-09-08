@@ -14,7 +14,7 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col h-screen w-64 bg-white border-r">
+    <div className="flex flex-col h-screen w-64 bg-white border-r pt-14">
       <div className="flex items-center justify-center h-16 border-b">
         <span className="text-xl font-semibold">Admin Dashboard</span>
       </div>
