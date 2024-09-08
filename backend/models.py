@@ -51,17 +51,30 @@ class SlideRequest(BaseModel):
     plan: str
     document: str
 
+
 class SummaryRequest(BaseModel):
     topic: str
     plan: str
     document: str
-    
+
+
 class FrontendJson(BaseModel):
     topic: str
     plan: str
     document: str
-    
+
+
 class VideoRequest(BaseModel):
     topic: str
     plan: str
     document: str
+
+
+class AllInOneRequest(BaseModel):
+    topic: str
+    plan: str
+    document: str
+    pdf_link: str
+    no_of_questions: int
+    num_slides: int
+    presentation_id: str

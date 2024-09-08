@@ -49,6 +49,7 @@ slidetable = dynamodb.Table(SlideTable)
 quizresponsetable = dynamodb.Table(QuizResponseTable)
 summarytable = dynamodb.Table(SummaryTable)
 
+
 def store_email_in_dynamodb(email):
     """Store the user's email in DynamoDB, avoiding duplicates."""
     try:
@@ -80,7 +81,8 @@ def dump_slide_to_dynamodb(plan: str, json_data: Dict[str, Any]) -> None:
     Function to dump JSON data to DynamoDB with plan as the partition key.
     """
     slidetable.put_item(Item={"plan": plan, "json_data": json.dumps(json_data)})
-    
+
+
 def dump_summary_to_dynamodb(plan: str, json_data: Dict[str, Any]) -> None:
     """
     Function to dump JSON data to DynamoDB with plan as the partition key.
@@ -254,17 +256,15 @@ def get_s3_folder_structure(bucket_name):
     sidebar_data = format_structure(root)
     return {"sidebarData": sidebar_data}
 
+
 def upload_video_to_s3(file_path, bucket_name, s3_key):
     """Upload a file to S3 and make it publicly accessible."""
     try:
         s3.upload_file(
-            file_path, 
-            bucket_name, 
-            s3_key, 
-            ExtraArgs={
-                'ContentDisposition': 'inline',
-                'ContentType': 'video/mp4'
-            }
+            file_path,
+            bucket_name,
+            s3_key,
+            ExtraArgs={"ContentDisposition": "inline", "ContentType": "video/mp4"},
         )
         print(f"File uploaded to S3: s3://{bucket_name}/{s3_key}")
         s3_url = f"https://{bucket_name}.s3.amazonaws.com/{s3_key}"
@@ -273,3 +273,12 @@ def upload_video_to_s3(file_path, bucket_name, s3_key):
         print("The file was not found")
     except NoCredentialsError:
         print("Credentials not available")
+
+
+def file_exists(s3_bucket, s3_file_path):
+    try:
+        s3.head_object(Bucket=s3_bucket, Key=s3_file_path)
+        return True
+    except s3.exceptions.ClientError as e:
+        if e.response["Error"]["Code"] == "404":
+            return False

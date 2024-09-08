@@ -9,7 +9,6 @@ from pdf2image import convert_from_path
 from moviepy.editor import *
 
 
-
 def ppt_to_pdf(ppt_path, pdf_path):
     powerpoint = client.CreateObject("Powerpoint.Application")
     powerpoint.Visible = 1
@@ -22,10 +21,10 @@ def ppt_to_pdf(ppt_path, pdf_path):
 def init_text_to_speech_engine(rate=180, volume=1.0, voice_index=1):
     """Initialize the text-to-speech engine with specified rate, volume, and voice."""
     engine = pyttsx3.init()
-    voices = engine.getProperty('voices')
-    engine.setProperty('rate', rate)
-    engine.setProperty('volume', volume)
-    engine.setProperty('voice', voices[voice_index].id)
+    voices = engine.getProperty("voices")
+    engine.setProperty("rate", rate)
+    engine.setProperty("volume", volume)
+    engine.setProperty("voice", voices[voice_index].id)
     return engine
 
 
@@ -39,9 +38,11 @@ def generate_voiceovers(slides, engine, save_path):
     """Generate voiceovers for all slides."""
     os.makedirs(save_path, exist_ok=True)
     for slide in slides:
-        voiceover_text = slide['slide_voiceover']
-        slide_number = slide['slide_number']
-        create_voiceover(engine, voiceover_text, f"{save_path}/voiceover_slide_{slide_number}")
+        voiceover_text = slide["slide_voiceover"]
+        slide_number = slide["slide_number"]
+        create_voiceover(
+            engine, voiceover_text, f"{save_path}/voiceover_slide_{slide_number}"
+        )
 
 
 def create_slide_video(image_path, audio_path, duration):
@@ -55,20 +56,21 @@ def create_slide_video(image_path, audio_path, duration):
 def convert_pdf_to_images(pdf_path, output_dir, dpi=300):
     """Convert a PDF to images and save each page as a PNG file."""
     os.makedirs(output_dir, exist_ok=True)
-    
+
     pages = convert_from_path(pdf_path, dpi=dpi)
     image_paths = []
     for i, page in enumerate(pages):
-        image_path = os.path.join(output_dir, f'slide_{i+1}.png')
-        page.save(image_path, 'PNG')
+        image_path = os.path.join(output_dir, f"slide_{i+1}.png")
+        page.save(image_path, "PNG")
         image_paths.append(image_path)
     return image_paths
 
-def create_slide_videos(slides, image_paths,save_path):
+
+def create_slide_videos(slides, image_paths, save_path):
     """Create video clips for all slides."""
     slide_videos = []
     for slide in slides:
-        image_path = image_paths[slide['slide_number'] - 1]
+        image_path = image_paths[slide["slide_number"] - 1]
         audio_path = f"{save_path}/voiceover_slide_{slide['slide_number']}.mp3"
         duration = AudioFileClip(audio_path).duration
         slide_video = create_slide_video(image_path, audio_path, duration)

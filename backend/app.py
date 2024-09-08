@@ -14,6 +14,7 @@ from backend.aws import (
     dump_quiz_to_dynamodb,
     dump_slide_to_dynamodb,
     dump_summary_to_dynamodb,
+    file_exists,
     get_s3_folder_structure,
     store_email_in_dynamodb,
     quiztable,
@@ -27,6 +28,7 @@ from backend.aws import (
 from backend.constants import APP_NAME
 from backend.auth import get_user_info, load_credentials
 from backend.models import (
+    AllInOneRequest,
     FrontendJson,
     QuizRequest,
     QuizResponse,
@@ -459,55 +461,339 @@ async def frontend_json(frontend_model: FrontendJson):
 
 @app.post("/create_video")
 async def create_video(video_model: VideoRequest):
-    response = slidetable.get_item(
-        Key={"plan": str(video_model.plan + " " + video_model.document)}
-    )
-    if "Item" in response:
-        slides = json.loads(response["Item"]["json_data"])
-    slides = slides["text"]["slides"]
-    s3_file_path = f"{video_model.topic}/{video_model.plan}/{video_model.document}/"
     new_presentation_name = (
         video_model.topic + " " + video_model.plan + " " + video_model.document
     )
-    presentation_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pptx")
-    
-    with open("compute/" + s3_file_path + f"{new_presentation_name}.pptx", "wb") as f:
-        f.write(presentation_file.getvalue())
+    if file_exists(BajajBucket, f"{video_model.topic}/{video_model.plan}/{video_model.document}/{new_presentation_name}.mp4"):
+        return {
+            "video_url": f"https://{BajajBucket}.s3.amazonaws.com/{video_model.topic}/{video_model.plan}/{video_model.document}/{new_presentation_name}.mp4"
+        }
+    else: 
+        response = slidetable.get_item(
+            Key={"plan": str(video_model.plan + " " + video_model.document)}
+        )
+        if "Item" in response:
+            slides = json.loads(response["Item"]["json_data"])
+        slides = slides["text"]["slides"]
+        s3_file_path = f"{video_model.topic}/{video_model.plan}/{video_model.document}/"
+        presentation_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pptx")
+        
+        with open("compute/" + s3_file_path + f"{new_presentation_name}.pptx", "wb") as f:
+            f.write(presentation_file.getvalue())
 
-    ppt_path = "compute/" + s3_file_path + f"{new_presentation_name}.pptx"
-    pdf_path = "compute/" + s3_file_path + f"{new_presentation_name}.pdf"
-    print(ppt_path)
+        ppt_path = "compute/" + s3_file_path + f"{new_presentation_name}.pptx"
+        pdf_path = "compute/" + s3_file_path + f"{new_presentation_name}.pdf"
+        print(ppt_path)
+        
+        if not os.path.exists(ppt_path):
+            print("Error: File does not exist.")
+        else:
+            absolute_ppt_path = os.path.abspath(ppt_path)
+            absolute_pdf_path = os.path.abspath(pdf_path)
+            ppt_to_pdf(absolute_ppt_path, absolute_pdf_path)
+
+        engine = init_text_to_speech_engine()
+
+        save_path = "compute/" + s3_file_path
+
+        generate_voiceovers(slides, engine, save_path + "voiceovers")
+
+        image_paths = convert_pdf_to_images(
+            pdf_path, save_path + "images"
+        )
+
+        slide_videos = create_slide_videos(slides, image_paths, save_path + "voiceovers")
+
+        save_final_presentation(
+            slide_videos,
+            f"compute/{s3_file_path}{video_model.topic} {video_model.plan} {video_model.document}.mp4",
+        )
+        final_video_path = f"compute/{s3_file_path}{video_model.topic} {video_model.plan} {video_model.document}.mp4"
+        s3_key = f"{video_model.topic}/{video_model.plan}/{video_model.document}/{new_presentation_name}.mp4"
+        video_url = upload_video_to_s3(final_video_path, BajajBucket, s3_key)
+        return {"video_url": video_url}
+
+@app.post("/all_in_one")
+async def all_in_one(all_in_one_model : AllInOneRequest):
+    all_in_one_final_response = {}
+    print("Rag Part Started")
+    try:
+        compute_directory = "compute/"
+        pdf_directory = "pdfs/"
+        os.makedirs(compute_directory, exist_ok=True)
+        os.makedirs(pdf_directory, exist_ok=True)
+
+        local_embedding_path = os.path.join(
+            compute_directory,
+            f"{all_in_one_model.topic}/{os.path.splitext(all_in_one_model.plan)[0]}/{all_in_one_model.document}/faiss_index/index.faiss",
+        )
+
+        if os.path.exists(local_embedding_path):
+            print({"response": "Embedding already exists locally"})
+        else:
+            s3_prefix = f"{all_in_one_model.topic}/{os.path.splitext(all_in_one_model.plan)[0]}/{all_in_one_model.document}/faiss_index"
+            try:
+                local_s3_folder_path = os.path.join(
+                    compute_directory,
+                    f"{all_in_one_model.topic}/{os.path.splitext(all_in_one_model.plan)[0]}/{all_in_one_model.document}/faiss_index",
+                )
+                os.makedirs(local_s3_folder_path, exist_ok=True)
+                download_s3_folder(BajajBucket, s3_prefix, local_s3_folder_path)
+                print({"response": "Embedding downloaded from S3"})
+            except FileNotFoundError:
+                file_path = os.path.join(
+                    pdf_directory, os.path.basename(all_in_one_model.pdf_link)
+                )
+
+                response = requests.get(all_in_one_model.pdf_link)
+                if response.status_code == 200:
+                    with open(file_path, "wb") as pdf_file:
+                        pdf_file.write(response.content)
+                else:
+                    raise HTTPException(status_code=404, detail="Failed to download PDF")
+
+                pdf_s3_path = f"{all_in_one_model.topic}/{os.path.splitext(all_in_one_model.plan)[0]}/{all_in_one_model.document}/{os.path.basename(file_path)}"
+                upload_pdf_to_s3(file_path, BajajBucket, pdf_s3_path)
+                with open(file_path, "rb") as pdf_file:
+                    pdf_bytes = pdf_file.read()
+
+                pdf_text = get_pdf_text_from_bytes(pdf_bytes)
+                text_chunks = get_text_chunks(pdf_text)
+                vector_store_dir = f"{compute_directory}{all_in_one_model.topic}/{os.path.splitext(all_in_one_model.plan)[0]}/{all_in_one_model.document}/faiss_index"
+
+                get_vector_store(text_chunks, filepath=vector_store_dir)
+                upload_folder_to_s3(vector_store_dir, BajajBucket, s3_prefix)
+
+                print({"response": "Embedding created and uploaded to S3"})    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    print("Rag Part Ended")
     
-    if not os.path.exists(ppt_path):
-        print("Error: File does not exist.")
+    print("Quiz Part Started")
+    try:
+        response = quiztable.get_item(
+            Key={"plan": str(all_in_one_model.plan + " " + all_in_one_model.document)}
+        )
+
+        if "Item" in response:
+            all_in_one_final_response["quiz"] = json.loads(response["Item"]["json_data"])
+        else:
+            prompt = """
+            Please provide a JSON with {} generated questions and answers in the following schema:
+
+            {{
+            "questions": [
+                {{
+                "questionText": "Question text goes here",
+                "questionOptions": ["Option 1", "Option 2", "Option 3", "Option 4"],
+                "questionAnswerIndex": 0,
+                }},
+                {{
+                "questionText": "Question text goes here",
+                "questionOptions": ["Option 1", "Option 2", "Option 3", "Option 4"],
+                "questionAnswerIndex": 1,
+                }},
+                // Add more questions as needed
+            ]
+            }}
+
+            Ensure the provided JSON adheres to the defined schema.
+            """.format(
+                all_in_one_model.no_of_questions
+            )
+            answer = user_input(
+                prompt,
+                filepath=f"compute/{all_in_one_model.topic}/{os.path.splitext(all_in_one_model.plan)[0]}/{all_in_one_model.document}/faiss_index",
+            )
+            dump_quiz_to_dynamodb(
+                str(all_in_one_model.plan + " " + all_in_one_model.document), answer
+            )
+            all_in_one_final_response["quiz"] = answer
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    print("Quiz Part Ended")
+    
+    print("Summary Part Started")
+    
+    try:
+        response = summarytable.get_item(
+            Key={"plan": str(all_in_one_model.plan + " " + all_in_one_model.document)}
+        )
+
+        if "Item" in response:
+            all_in_one_final_response["summary"] = json.loads(response["Item"]["json_data"])
+        else:
+            answer = await generate_summary_data(
+                all_in_one_model.topic, all_in_one_model.plan, all_in_one_model.document
+            )
+
+            dump_summary_to_dynamodb(
+                str(all_in_one_model.plan + " " + all_in_one_model.document), answer
+            )
+            all_in_one_final_response["summary"] = answer
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    print("Summary Part Ended")
+    
+    print("Slide Part Started")
+    try:
+        response = slidetable.get_item(
+            Key={"plan": str(all_in_one_model.plan + " " + all_in_one_model.document)}
+        )
+
+        if "Item" in response:
+            all_in_one_final_response["slide"] = json.loads(response["Item"]["json_data"])
+        else:
+            answer = await generate_slide_data(
+                all_in_one_model.topic, all_in_one_model.plan, all_in_one_model.document
+            )
+
+            dump_slide_to_dynamodb(
+                str(all_in_one_model.plan + " " + all_in_one_model.document), answer
+            )
+            all_in_one_final_response["slide"] = answer
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    print("Slide Part Ended")
+
+    print("Slide Generation Started")
+    try:
+        creds = load_credentials()
+        slides_service = slides_init(creds)
+        drive_service = drive_init(creds)
+        original_presentation_id = all_in_one_model.presentation_id
+        new_presentation_name = (
+            all_in_one_model.topic
+            + " "
+            + all_in_one_model.plan
+            + " "
+            + all_in_one_model.document
+        )
+
+        s3_file_path = f"{all_in_one_model.topic}/{all_in_one_model.plan}/{all_in_one_model.document}/{new_presentation_name}.pptx"
+        try:
+            presentation_file = download_from_s3(BajajBucket, s3_file_path)
+            print("PPT Already Exists")
+        except Exception as e:
+            duplicated_presentation = copy_presentation(
+                drive_service, original_presentation_id, new_presentation_name
+            )
+            duplicated_presentation_id = duplicated_presentation.get("id")
+
+            if not duplicated_presentation_id:
+                raise HTTPException(
+                    status_code=500, detail="Failed to duplicate presentation."
+                )
+
+            response = slidetable.get_item(
+                Key={"plan": str(all_in_one_model.plan + " " + all_in_one_model.document)}
+            )
+
+            if "Item" in response:
+                data = json.loads(response["Item"]["json_data"])
+            else:
+                data = await generate_slide_data(
+                    all_in_one_model.topic, all_in_one_model.plan, all_in_one_model.document
+                )
+                dump_slide_to_dynamodb(
+                    str(all_in_one_model.plan + " " + all_in_one_model.document), data
+                )
+
+            slides_data = data["text"]["slides"]
+            slides_list = []
+            for slide_data in slides_data:
+                try:
+                    slide = Slide(**slide_data)
+                    slides_list.append(slide)
+                except ValidationError as e:
+                    raise HTTPException(
+                        status_code=400, detail=f"Invalid slide data: {e}"
+                    )
+
+            all_in_one_model = all_in_one_model.copy(update={"name": all_in_one_model.plan})
+            all_in_one_model = all_in_one_model.copy(update={"slides": slides_list})
+
+            for slide_request in all_in_one_model.slides:
+                build_slide(slides_service, duplicated_presentation_id, slide_request)
+
+            export_format = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            presentation_file = export_presentation(
+                drive_service, duplicated_presentation_id, export_format
+            )
+
+            if not isinstance(presentation_file, BytesIO):
+                raise HTTPException(
+                    status_code=500,
+                    detail="Failed to export presentation. The returned file is not a BytesIO object.",
+                )
+
+            with open("compute/" + s3_file_path, "wb") as f:
+                f.write(presentation_file.getvalue())
+            s3_buffer = BytesIO(presentation_file.getvalue())
+            upload_to_s3(s3_buffer, BajajBucket, s3_file_path)
+            print("PPT Created")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    print("Slide Generation Ended")
+    
+    print("Video Generation Started")
+
+    new_presentation_name = (
+        all_in_one_model.topic + " " + all_in_one_model.plan + " " + all_in_one_model.document
+    )
+    if file_exists(BajajBucket, f"{all_in_one_model.topic}/{all_in_one_model.plan}/{all_in_one_model.document}/{new_presentation_name}.mp4"):
+        all_in_one_final_response["video_url"] = f"https://{BajajBucket}.s3.amazonaws.com/{all_in_one_model.topic}/{all_in_one_model.plan}/{all_in_one_model.document}/{new_presentation_name}.mp4"
     else:
-        absolute_ppt_path = os.path.abspath(ppt_path)
-        absolute_pdf_path = os.path.abspath(pdf_path)
-        ppt_to_pdf(absolute_ppt_path, absolute_pdf_path)
+        response = slidetable.get_item(
+            Key={"plan": str(all_in_one_model.plan + " " + all_in_one_model.document)}
+        )
+        if "Item" in response:
+            slides = json.loads(response["Item"]["json_data"])
+        slides = slides["text"]["slides"]
+        s3_file_path = f"{all_in_one_model.topic}/{all_in_one_model.plan}/{all_in_one_model.document}/"
+        presentation_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pptx")
+        
+        with open("compute/" + s3_file_path + f"{new_presentation_name}.pptx", "wb") as f:
+            f.write(presentation_file.getvalue())
 
-    engine = init_text_to_speech_engine()
+        ppt_path = "compute/" + s3_file_path + f"{new_presentation_name}.pptx"
+        pdf_path = "compute/" + s3_file_path + f"{new_presentation_name}.pdf"
+        
+        if not os.path.exists(ppt_path):
+            print("Error: File does not exist.")
+        else:
+            absolute_ppt_path = os.path.abspath(ppt_path)
+            absolute_pdf_path = os.path.abspath(pdf_path)
+            ppt_to_pdf(absolute_ppt_path, absolute_pdf_path)
 
-    save_path = "compute/" + s3_file_path
+        engine = init_text_to_speech_engine()
 
-    generate_voiceovers(slides, engine, save_path + "voiceovers")
+        save_path = "compute/" + s3_file_path
 
-    image_paths = convert_pdf_to_images(
-        pdf_path, save_path + "images"
-    )
+        generate_voiceovers(slides, engine, save_path + "voiceovers")
 
-    slide_videos = create_slide_videos(slides, image_paths, save_path + "voiceovers")
+        image_paths = convert_pdf_to_images(
+            pdf_path, save_path + "images"
+        )
 
-    save_final_presentation(
-        slide_videos,
-        f"compute/{s3_file_path}{video_model.topic} {video_model.plan} {video_model.document}.mp4",
-    )
-    final_video_path = f"compute/{s3_file_path}{video_model.topic} {video_model.plan} {video_model.document}.mp4"
-    s3_key = f"{video_model.topic}/{video_model.plan}/{video_model.document}/{new_presentation_name}.mp4"
-    video_url = upload_video_to_s3(final_video_path, BajajBucket, s3_key)
-    return {"video_url": video_url}
+        slide_videos = create_slide_videos(slides, image_paths, save_path + "voiceovers")
+
+        save_final_presentation(
+            slide_videos,
+            f"compute/{s3_file_path}{all_in_one_model.topic} {all_in_one_model.plan} {all_in_one_model.document}.mp4",
+        )
+        final_video_path = f"compute/{s3_file_path}{all_in_one_model.topic} {all_in_one_model.plan} {all_in_one_model.document}.mp4"
+        s3_key = f"{all_in_one_model.topic}/{all_in_one_model.plan}/{all_in_one_model.document}/{new_presentation_name}.mp4"
+        video_url = upload_video_to_s3(final_video_path, BajajBucket, s3_key)
+        print({"video_url": video_url})
+        all_in_one_final_response["video_url"] = video_url
+    print("All in One Process Ended")    
+    return all_in_one_final_response
 
 if __name__ == "__main__":
-
     import uvicorn
-
     uvicorn.run(app, host="127.0.0.1", port=5000, debug=True)
