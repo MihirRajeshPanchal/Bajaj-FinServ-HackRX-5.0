@@ -32,14 +32,14 @@ export default function Page() {
         </div>
       </div>
 
-      <main className="heroMain">
+      {/* <main className="heroMain">
         <div className="part1" id="why">
           <h2>Why Realtime Colors?</h2>
           <div className="part1-cards">
             <div className="part1-card">
               <svg width="117" height="117" viewBox="0 0 117 117" fill="none" style={{ zIndex: 5 }} className="part1-card-img">
                 <circle cx="58.5" cy="58.5" r="58.5" fill="var(--secondary)" />
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M89.4669 8.85912L58.0465 63.9419L2.44746 41.7023C9.66585 17.5806 32.0298 0 58.5 0C69.872 0 80.4861 3.24483 89.4669 8.85912Z" fill="var(--primbuttn)" fill-opacity="0.6" />
+                <path fillRule="evenodd" clipRule="evenodd" d="M89.4669 8.85912L58.0465 63.9419L2.44746 41.7023C9.66585 17.5806 32.0298 0 58.5 0C69.872 0 80.4861 3.24483 89.4669 8.85912Z" fill="var(--primbuttn)" fill-opacity="0.6" />
                 <path d="M81.5 22.5L57.1395 64.8489L32 53.5" stroke="var(--primary)" stroke-width="7.25581" />
               </svg>
               <p className="subtitle highlight">Saves time</p>
@@ -86,7 +86,7 @@ export default function Page() {
             <p className="four step">Happy with the results? Press on “Export” and receive a .zip file with your color palette in .png and your color codes in .txt files.</p>
           </div>
         </div>
-      </main>
+      </main> */}
     </div>
     // </BackgroundBeamsWithCollision>
   );
