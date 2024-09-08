@@ -55,7 +55,6 @@ from backend.video import (
     create_slide_videos,
     generate_voiceovers,
     init_text_to_speech_engine,
-    ppt_to_pdf,
     save_final_presentation,
 )
 
@@ -103,11 +102,13 @@ async def create_slides(slide_request: SlidesRequest):
             + slide_request.document
         )
 
-        s3_file_path = f"{slide_request.topic}/{slide_request.plan}/{slide_request.document}/{new_presentation_name}.pptx"
+        s3_file_path_ppt = f"{slide_request.topic}/{slide_request.plan}/{slide_request.document}/{new_presentation_name}.pptx"
+        s3_file_path_pdf = f"{slide_request.topic}/{slide_request.plan}/{slide_request.document}/{new_presentation_name}.pdf"
+        
         try:
-            presentation_file = download_from_s3(BajajBucket, s3_file_path)
+            presentation_file_ppt = download_from_s3(BajajBucket, s3_file_path_ppt)
             return StreamingResponse(
-                presentation_file,
+                presentation_file_ppt,
                 media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
                 headers={
                     "Content-Disposition": f"attachment; filename={new_presentation_name}.pptx"
@@ -155,24 +156,42 @@ async def create_slides(slide_request: SlidesRequest):
             for slide_request in slide_request.slides:
                 build_slide(slides_service, duplicated_presentation_id, slide_request)
 
-            export_format = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-            presentation_file = export_presentation(
-                drive_service, duplicated_presentation_id, export_format
+            ppt_export_format = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            pdf_export_format = "application/pdf"
+            
+            ppt_presentation_file = export_presentation(
+                drive_service, duplicated_presentation_id, ppt_export_format
             )
 
-            if not isinstance(presentation_file, BytesIO):
+            if not isinstance(ppt_presentation_file, BytesIO):
                 raise HTTPException(
                     status_code=500,
-                    detail="Failed to export presentation. The returned file is not a BytesIO object.",
+                    detail="Failed to export PPT presentation. The returned file is not a BytesIO object.",
                 )
 
-            with open("compute/" + s3_file_path, "wb") as f:
-                f.write(presentation_file.getvalue())
-            s3_buffer = BytesIO(presentation_file.getvalue())
-            upload_to_s3(s3_buffer, BajajBucket, s3_file_path)
+            pdf_presentation_file = export_presentation(
+                drive_service, duplicated_presentation_id, pdf_export_format
+            )
+
+            if not isinstance(pdf_presentation_file, BytesIO):
+                raise HTTPException(
+                    status_code=500,
+                    detail="Failed to export PDF presentation. The returned file is not a BytesIO object.",
+                )
+
+            with open("compute/" + s3_file_path_ppt, "wb") as f:
+                f.write(ppt_presentation_file.getvalue())
+            ppt_s3_buffer = BytesIO(ppt_presentation_file.getvalue())
+            upload_to_s3(ppt_s3_buffer, BajajBucket, s3_file_path_ppt)
+
+            with open("compute/" + s3_file_path_pdf, "wb") as f:
+                f.write(pdf_presentation_file.getvalue())
+            pdf_s3_buffer = BytesIO(pdf_presentation_file.getvalue())
+            upload_to_s3(pdf_s3_buffer, BajajBucket, s3_file_path_pdf)
+
             return StreamingResponse(
-                open("compute/" + s3_file_path, "rb"),
-                media_type=export_format,
+                open("compute/" + s3_file_path_ppt, "rb"),
+                media_type=ppt_export_format,
                 headers={
                     "Content-Disposition": f"attachment; filename={new_presentation_name}.pptx"
                 },
@@ -477,20 +496,16 @@ async def create_video(video_model: VideoRequest):
         slides = slides["text"]["slides"]
         s3_file_path = f"{video_model.topic}/{video_model.plan}/{video_model.document}/"
         presentation_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pptx")
+        pdf_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pdf")
         
         with open("compute/" + s3_file_path + f"{new_presentation_name}.pptx", "wb") as f:
             f.write(presentation_file.getvalue())
+            
+        with open("compute/" + s3_file_path + f"{new_presentation_name}.pdf", "wb") as f:
+            f.write(pdf_file.getvalue())
 
-        ppt_path = "compute/" + s3_file_path + f"{new_presentation_name}.pptx"
         pdf_path = "compute/" + s3_file_path + f"{new_presentation_name}.pdf"
-        print(ppt_path)
         
-        if not os.path.exists(ppt_path):
-            print("Error: File does not exist.")
-        else:
-            absolute_ppt_path = os.path.abspath(ppt_path)
-            absolute_pdf_path = os.path.abspath(pdf_path)
-            ppt_to_pdf(absolute_ppt_path, absolute_pdf_path)
 
         engine = init_text_to_speech_engine()
 
@@ -673,10 +688,12 @@ async def all_in_one(all_in_one_model : AllInOneRequest):
             + all_in_one_model.document
         )
 
-        s3_file_path = f"{all_in_one_model.topic}/{all_in_one_model.plan}/{all_in_one_model.document}/{new_presentation_name}.pptx"
+        s3_file_path_ppt = f"{all_in_one_model.topic}/{all_in_one_model.plan}/{all_in_one_model.document}/{new_presentation_name}.pptx"
+        s3_file_path_pdf = f"{all_in_one_model.topic}/{all_in_one_model.plan}/{all_in_one_model.document}/{new_presentation_name}.pdf"
+        
         try:
-            presentation_file = download_from_s3(BajajBucket, s3_file_path)
-            print("PPT Already Exists")
+            presentation_file_ppt = download_from_s3(BajajBucket, s3_file_path_ppt)
+            print("PPT File Exists")
         except Exception as e:
             duplicated_presentation = copy_presentation(
                 drive_service, original_presentation_id, new_presentation_name
@@ -716,25 +733,41 @@ async def all_in_one(all_in_one_model : AllInOneRequest):
             all_in_one_model = all_in_one_model.copy(update={"name": all_in_one_model.plan})
             all_in_one_model = all_in_one_model.copy(update={"slides": slides_list})
 
-            for slide_request in all_in_one_model.slides:
-                build_slide(slides_service, duplicated_presentation_id, slide_request)
+            for slide in all_in_one_model.slides:
+                build_slide(slides_service, duplicated_presentation_id, slide)
 
-            export_format = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-            presentation_file = export_presentation(
-                drive_service, duplicated_presentation_id, export_format
+            ppt_export_format = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            pdf_export_format = "application/pdf"
+            
+            ppt_presentation_file = export_presentation(
+                drive_service, duplicated_presentation_id, ppt_export_format
             )
 
-            if not isinstance(presentation_file, BytesIO):
+            if not isinstance(ppt_presentation_file, BytesIO):
                 raise HTTPException(
                     status_code=500,
-                    detail="Failed to export presentation. The returned file is not a BytesIO object.",
+                    detail="Failed to export PPT presentation. The returned file is not a BytesIO object.",
                 )
 
-            with open("compute/" + s3_file_path, "wb") as f:
-                f.write(presentation_file.getvalue())
-            s3_buffer = BytesIO(presentation_file.getvalue())
-            upload_to_s3(s3_buffer, BajajBucket, s3_file_path)
-            print("PPT Created")
+            pdf_presentation_file = export_presentation(
+                drive_service, duplicated_presentation_id, pdf_export_format
+            )
+
+            if not isinstance(pdf_presentation_file, BytesIO):
+                raise HTTPException(
+                    status_code=500,
+                    detail="Failed to export PDF presentation. The returned file is not a BytesIO object.",
+                )
+
+            with open("compute/" + s3_file_path_ppt, "wb") as f:
+                f.write(ppt_presentation_file.getvalue())
+            ppt_s3_buffer = BytesIO(ppt_presentation_file.getvalue())
+            upload_to_s3(ppt_s3_buffer, BajajBucket, s3_file_path_ppt)
+
+            with open("compute/" + s3_file_path_pdf, "wb") as f:
+                f.write(pdf_presentation_file.getvalue())
+            pdf_s3_buffer = BytesIO(pdf_presentation_file.getvalue())
+            upload_to_s3(pdf_s3_buffer, BajajBucket, s3_file_path_pdf)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -756,19 +789,16 @@ async def all_in_one(all_in_one_model : AllInOneRequest):
         slides = slides["text"]["slides"]
         s3_file_path = f"{all_in_one_model.topic}/{all_in_one_model.plan}/{all_in_one_model.document}/"
         presentation_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pptx")
+        pdf_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pdf")
         
         with open("compute/" + s3_file_path + f"{new_presentation_name}.pptx", "wb") as f:
             f.write(presentation_file.getvalue())
+            
+        with open("compute/" + s3_file_path + f"{new_presentation_name}.pdf", "wb") as f:
+            f.write(pdf_file.getvalue())
 
-        ppt_path = "compute/" + s3_file_path + f"{new_presentation_name}.pptx"
         pdf_path = "compute/" + s3_file_path + f"{new_presentation_name}.pdf"
         
-        if not os.path.exists(ppt_path):
-            print("Error: File does not exist.")
-        else:
-            absolute_ppt_path = os.path.abspath(ppt_path)
-            absolute_pdf_path = os.path.abspath(pdf_path)
-            ppt_to_pdf(absolute_ppt_path, absolute_pdf_path)
 
         engine = init_text_to_speech_engine()
 
