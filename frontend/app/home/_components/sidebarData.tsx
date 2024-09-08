@@ -1,15 +1,6 @@
-import Sidebar from './sidebar';
-import { SidebarItemData } from './sidebar';
 import SidebarWrapper from './sidebarWrapper';
-
-async function fetchSidebarData(): Promise<SidebarItemData[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/frontend_sidebar_json`, { cache: 'force-cache' });
-  if (!res.ok) {
-    throw new Error('Failed to fetch sidebar data');
-  }
-  const data = await res.json();
-  return data.sidebarData; 
-}
+import { fetchSidebarData } from '@/app/api/getSidebarData';
+import { SidebarItemData } from './sidebar';
 
 export default async function SidebarData() {
   const sidebarData = await fetchSidebarData();
