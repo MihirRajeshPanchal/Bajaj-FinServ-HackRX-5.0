@@ -65,7 +65,7 @@ os.makedirs("compute", exist_ok=True)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
+    allow_origins=[ "http://localhost:3000", "https://bajaj-frontend.vercel.app", "https://bajaj-frontend-git-main-mlh-fellowship.vercel.app"],
     allow_methods=["*"],
     allow_headers=["*"],
 )

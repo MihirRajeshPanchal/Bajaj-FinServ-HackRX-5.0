@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Space_Mono } from "next/font/google";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 type TableOfContentsProps = {
   content: string;
@@ -24,7 +25,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ content }) => {
         document.getElementById(item.toLowerCase())
       );
 
-      const offset = 100; 
+      const offset = 500; 
       const scrollPosition = window.scrollY + offset;
 
       for (let i = sections.length - 1; i >= 0; i--) {
@@ -48,7 +49,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ content }) => {
       <ul className="space-y-2">
         {toc.map((item, index) => (
           <li key={index}>
-            <a
+            <Link
               href={`#${item.toLowerCase()}`}
               className={cn(
                 "text-blue-500 hover:text-blue-700 transition duration-300",
@@ -56,7 +57,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ content }) => {
               )}
             >
               {item}
-            </a>
+            </Link>
           </li>
         ))}
       </ul>

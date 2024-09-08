@@ -18,7 +18,7 @@ interface SlideResponse {
 
 interface PageData {
   content: string;
-  videoUrl: undefined;
+  videoUrl: string;
   transcript: string;
 }
 
@@ -39,6 +39,20 @@ export async function getPageData(slug: string[]): Promise<PageData> {
 
   const summaryData: SummaryResponse = await summaryResponse.json();
   const summary = summaryData?.text?.summary || 'No summary available.';
+
+  const videoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/create_video`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      topic,
+      plan,
+      document,
+    }),
+  });
+
+  const videoData: string = await videoResponse.json();
 
   const slideResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/slide_generate`, {
     method: 'POST',
@@ -63,7 +77,7 @@ export async function getPageData(slug: string[]): Promise<PageData> {
 
   return {
     content: summary,
-    videoUrl: undefined,
+    videoUrl: "https://www.youtube.com/watch?v=1lCoQi1IcQ0",
     transcript: transcript || 'No transcript available.',
   };
 }
