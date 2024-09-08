@@ -1,21 +1,9 @@
 import os
 import os
-import json
 import pyttsx3
-import time
 from moviepy.editor import ImageClip, AudioFileClip, concatenate_videoclips
-from comtypes import client
 from pdf2image import convert_from_path
 from moviepy.editor import *
-
-
-def ppt_to_pdf(ppt_path, pdf_path):
-    powerpoint = client.CreateObject("Powerpoint.Application")
-    powerpoint.Visible = 1
-    ppt = powerpoint.Presentations.Open(ppt_path)
-    ppt.SaveAs(pdf_path, 32)
-    ppt.Close()
-    powerpoint.Quit()
 
 
 def init_text_to_speech_engine(rate=180, volume=1.0, voice_index=1):
