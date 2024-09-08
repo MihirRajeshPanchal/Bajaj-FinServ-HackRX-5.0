@@ -13,8 +13,7 @@ const poppins = Poppins({
 
 export default function Home() {
   return (
-    <div className="pageWrapper px-6 lg:px-12l overflow-hidden">
-    {/* Hero Header */}
+    <div className="pageWrapper lg:px-12l overflow-hidden">
     <section className="hero min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-blue-100 to-purple-200 text-white text-center py-16">
         <h1 className={cn("text-5xl lg:text-7xl font-bold mb-4", poppins.className)}>
             Get Started 
@@ -43,7 +42,7 @@ export default function Home() {
           <p className="text-lg mb-8">
             Discover the key features of HackRx and how it can help you streamline your workflow.
           </p>
-          <div className="flex justify-center gap-8">
+          <div className="mx-3 flex justify-center gap-8">
             <div className="feature-card bg-white p-6 rounded-lg shadow-md">
               <h3 className="text-2xl font-semibold mb-4">Generate Quizzes</h3>
               <p>Create quizzes from your PDFs to test knowledge and track progress.</p>
@@ -64,7 +63,7 @@ export default function Home() {
       <section className="howItWorks py-16">
         <div className="container mx-auto">
           <h2 className={cn("text-4xl font-bold text-center mb-8", font.className)}>How It Works</h2>
-          <div className="flex flex-col lg:flex-row gap-8">
+          <div className="mx-3 flex flex-col lg:flex-row gap-8">
             <div className="step-card bg-white p-6 rounded-lg shadow-md">
               <h3 className="text-xl font-semibold mb-4">Step 1</h3>
               <p>Start with uploading your PDF files to the platform.</p>

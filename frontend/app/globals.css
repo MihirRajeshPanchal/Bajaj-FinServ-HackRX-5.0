@@ -90,6 +90,9 @@ body {
   }
 }
 
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
 
 .scrollbar::-webkit-scrollbar {
   width: 10px;
