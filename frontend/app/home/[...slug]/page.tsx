@@ -7,7 +7,7 @@ import TableOfContents from "./_components/tableOfContents";
 import QuizButton from "./_components/quizButton";
 import Quiz from "./_components/quiz";
 import { getQuiz } from "../../api/getQuiz";
-import { getPageData } from "@/app/api/getPagedData";
+import { getPageData } from "@/app/api/getPageData";
 
 const font = Space_Mono({
   subsets: ["latin"],
