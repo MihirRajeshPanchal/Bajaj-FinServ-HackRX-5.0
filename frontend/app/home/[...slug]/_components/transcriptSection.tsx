@@ -12,15 +12,16 @@ type TranscriptSectionProps = {
 
 const TranscriptSection: React.FC<TranscriptSectionProps> = ({ transcript }) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
-  
-  const handleCopy = async () => {
+
+  const handleCopy = () => {
     if (transcript) {
-      try {
-        await navigator.clipboard.writeText(transcript);
-        toast.success("Transcript copied successfully!"); 
-      } catch (error) {
-        toast.error("Failed to copy transcript."); 
-      }
+      navigator.clipboard.writeText(transcript)
+        .then(() => {
+          toast.success("Transcript copied successfully!");
+        })
+        .catch(() => {
+          toast.error("Failed to copy transcript.");
+        });
     }
   };
 
@@ -41,7 +42,6 @@ const TranscriptSection: React.FC<TranscriptSectionProps> = ({ transcript }) => 
           <p>{transcript}</p>
           <div className="absolute top-2 right-2">
             <Hint label="Copy transcript" side="bottom" align="center" sideOffset={18}>
-              
               <button 
                 onClick={handleCopy} 
                 className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"

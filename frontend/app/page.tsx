@@ -73,7 +73,7 @@ export default function Page() {
             <div className="part1-card">
               <svg width="117" height="117" viewBox="0 0 117 117" fill="none" style={{ zIndex: 5 }} className="part1-card-img">
                 <circle cx="58.5" cy="58.5" r="58.5" fill="var(--secondary)" />
-                <path fillRule="evenodd" clipRule="evenodd" d="M89.4669 8.85912L58.0465 63.9419L2.44746 41.7023C9.66585 17.5806 32.0298 0 58.5 0C69.872 0 80.4861 3.24483 89.4669 8.85912Z" fill="var(--primbuttn)" fill-opacity="0.6" />
+                <path fillRule="evenodd" clipRule="evenodd" d="M89.4669 8.85912L58.0465 63.9419L2.44746 41.7023C9.66585 17.5806 32.0298 0 58.5 0C69.872 0 80.4861 3.24483 89.4669 8.85912Z" fill="var(--primbuttn)" fillOpacity="0.6" />
                 <path d="M81.5 22.5L57.1395 64.8489L32 53.5" stroke="var(--primary)" stroke-width="7.25581" />
               </svg>
               <p className="subtitle highlight">Saves time</p>
@@ -84,8 +84,8 @@ export default function Page() {
             <div className="part1-card">
               <svg width="112" height="114" viewBox="0 0 112 114" fill="none" style={{ zIndex: 5 }} className="part1-card-img">
                 <rect width="58" height="58" fill="var(--secondary)" />
-                <rect x="69" y="25" width="33" height="33" fill="var(--primbuttn)" fill-opacity="0.6" />
-                <rect x="69" y="71" width="43" height="43" fill="var(--primary)" fill-opacity="0.2" />
+                <rect x="69" y="25" width="33" height="33" fill="var(--primbuttn)" fillOpacity="0.6" />
+                <rect x="69" y="71" width="43" height="43" fill="var(--primary)" fillOpacity="0.2" />
                 <rect x="20" y="70" width="38" height="39" fill="var(--primary)" />
               </svg>
               <p className="subtitle highlight">It’s Realistic</p>
@@ -95,7 +95,7 @@ export default function Page() {
 
             <div className="part1-card">
               <svg width="179" height="89" viewBox="0 0 179 89" fill="none" style={{ zIndex: 5 }} className="part1-card-img">
-                <rect y="26" width="154" height="63" fill="var(--primbuttn)" fill-opacity="0.6" />
+                <rect y="26" width="154" height="63" fill="var(--primbuttn)" fillOpacity="0.6" />
                 <path d="M142 15.5V0" stroke="var(--primary)" stroke-width="8" />
                 <path d="M163 34L178.5 34" stroke="var(--primary)" stroke-width="8" />
                 <path d="M158 19.5L170.5 7" stroke="var(--primary)" stroke-width="8" />
