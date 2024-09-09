@@ -39,7 +39,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ item, path = [] }) => {
     <li className={`${!hasChildren ? "fileNoChild | grid gap-1 grid-cols-[2px_1fr]" : "mt-2"}`}>
       {!hasChildren && <div className={`bg-accent ${!isActive && "bg-opacity-50"} transition-colors`}></div>}
       <Link href={href}
-        className={`flex items-center gap-1.5 p-2 text-gray-300 rounded-lg !bg-opacity-30 hover:bg-accent group ${isActive && "bg-accent"} ${hasChildren ? 'font-medium' : 'text-sm m-0.5'}`}
+        className={`flex items-center gap-1.5 p-2 ~text-gray-300 rounded-lg !bg-opacity-30 hover:bg-accent group ${isActive && "bg-accent"} ${hasChildren ? 'font-medium' : 'text-sm m-0.5'}`}
         onClick={(e) => {
           if (hasChildren) {
             e.preventDefault();
