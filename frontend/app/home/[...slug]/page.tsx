@@ -8,6 +8,8 @@ import QuizButton from "./_components/quizButton";
 import Quiz from "./_components/quiz";
 import { getQuiz } from "../../api/getQuiz";
 import { getPageData } from "@/app/api/getPageData";
+import Link from "next/link";
+import { HomeIcon, MoveLeft } from "lucide-react";
 
 const font = Space_Mono({
   subsets: ["latin"],
@@ -39,10 +41,13 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
   return (
     <div className="grid grid-flow-col gap-4 pt-14">
       <div className="py-16 px-[clamp(2rem,3.125vw,4rem)]">
-        <p className={cn("text-sm text-gray-500 mb-2", font.className)}>
+        <Link href="/home" className={`flex items-center gap-2 text-sm text-gray-500 mb-2 hover:text-text hover:gap-4 transition-[color,gap] ${font.className}`}>
+          <MoveLeft/> Home
+        </Link>
+        <p className={cn("text-sm text-gray-500 mb-2 underline underline-offset-8", font.className)}>
           {context}
         </p>
-        <h1 className={cn("text-4xl font-bold mb-20", font.className)}>
+        <h1 className={cn("text-4xl font-bold mb-16 mt-4", font.className)}>
           {title}
         </h1>
         <div className="flex gap-8">

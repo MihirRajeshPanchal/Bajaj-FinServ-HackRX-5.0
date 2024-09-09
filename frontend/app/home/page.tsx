@@ -14,7 +14,7 @@ const poppins = Poppins({
 export default function Home() {
   return (
     <div className="pageWrapper lg:px-12l overflow-hidden">
-    <section className="hero min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-blue-100 to-purple-200 text-white text-center py-16">
+    <section className="hero min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-blue-100 to-purple-200 text-text text-center py-16">
         <h1 className={cn("text-5xl lg:text-7xl font-bold mb-4", poppins.className)}>
             Get Started 
         </h1>
@@ -23,15 +23,15 @@ export default function Home() {
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">HackRx</span>
         </h1>
         <p className={cn("text-xl lg:text-2xl mb-8", font.className)}>
-            A tool that helps you generate quizzes and videos from PDFs quickly and efficiently.
+          From Documents to Dynamic Videos: Transforming Content, Engaging Minds.
         </p>
         <div className="flex gap-4">
-            <button className={cn("py-3 px-6 rounded-full border-2 border-white bg-transparent text-white font-medium hover:bg-white hover:text-blue-500 transition duration-300", font.className)}>
+            <button className={cn("py-3 px-6 rounded-full border-2 border-white bg-transparent text-text font-medium hover:bg-white hover:text-blue-500 transition duration-300", font.className)}>
                 How it Works?
             </button>
-            <button className={cn("py-3 px-6 rounded-full bg-white text-blue-500 font-medium shadow-lg hover:bg-gray-100 transition duration-300", font.className)}>
+            {/* <button className={cn("py-3 px-6 rounded-full bg-white text-blue-500 font-medium shadow-lg hover:bg-gray-100 transition duration-300", font.className)}>
                 Get Started
-            </button>
+            </button> */}
         </div>
     </section>
 

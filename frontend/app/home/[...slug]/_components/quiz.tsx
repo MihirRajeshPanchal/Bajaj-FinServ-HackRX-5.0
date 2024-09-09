@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { Timer } from 'lucide-react';
 
 type Question = {
   questionText: string;
@@ -78,7 +79,7 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white font-sans"
+        className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white font-sans col-span-full"
       >
         <h1 className="text-4xl font-bold mb-8">Quiz Finished!</h1>
         <p className="text-2xl mb-4">
@@ -106,20 +107,20 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
   const currentQuestion = questions[currentQuestionIndex];
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center font-sans p-4">
+    <div className="quiz | min-h-screen flex items-center justify-center font-sans p-4 col-span-full">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-secondary rounded-lg shadow-2xl p-8 max-w-2xl w-full border border-gray-700"
+        className="bg-[hsl(0,0%,100%,0.2)] backdrop-blur-[1px] rounded-lg shadow-2xl p-8 w-[min(1024px,100%)]"
       >
         <div className="flex justify-between items-center mb-6">
-          <h1 className="bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 rounded-full font-bold text-white">
+          <h1 className="bg-background border-2 border-text to-50% px-4 py-2 rounded-full font-medium text-text">
             Question {currentQuestionIndex + 1}/{questions.length}
           </h1>
-          <p className="text-black-400">Score: {score}</p>
+          {/* <p className="text-black-400">Score: {score}</p> */}
         </div>
-        <h2 className="text-2xl font-semibold text-white mb-6">
+        <h2 className="text-2xl font-semibold text-text mb-6">
           {currentQuestion.questionText}
         </h2>
 
@@ -133,14 +134,14 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
               whileTap={{ scale: 0.98 }}
               className={`w-full text-left p-4 rounded-lg transition duration-300 ${
                 selectedOption === option
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-700 text-gray-200 hover:bg-gray-600"
+                  ? "bg-blue-600 text-background"
+                  : "bg-gray-600 text-gray-200 hover:bg-gray-600"
               } ${
                 showAnswer
                   ? option === currentQuestion.questionOptions[currentQuestion.questionAnswerIndex]
-                    ? "bg-green-500 text-white"
+                    ? "bg-green-500 text-text"
                     : selectedOption === option
-                    ? "bg-red-500 text-white"
+                    ? "bg-red-500 text-text"
                     : ""
                   : ""
               } border border-gray-600`}
@@ -150,16 +151,14 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
           ))}
         </div>
         <div className="flex justify-between items-center">
-          <p className="text-blue-400">Time left: {timeLeft} seconds</p>
-          <motion.button
+          <p className="text-text flex items-end gap-0.5"><Timer/><span className='font-medium'>{timeLeft}</span>seconds</p>
+          <button
             onClick={handleSubmitAnswer}
             disabled={!selectedOption && !showAnswer}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-blue-600 hover:to-purple-700 transition duration-300 disabled:opacity-50 shadow-lg"
+            className="disabled:bg-opacity-50 disabled:cursor-not-allowed disabled:translate-x-0 disabled:translate-y-0 disabled:shadow-[0px_0px_black] h-full py-3.5 px-6 ~rounded-full hover:cursor-pointer bg-accent font-medium text-white shadow-[4px_4px_black] -translate-x-0.5 -translate-y-0.5 hover:translate-x-0 hover:translate-y-0 hover:shadow-[0px_0px_black] transition-[transform,box-shadow]"
           >
             {showAnswer ? 'Next Question' : 'Submit Answer'}
-          </motion.button>
+          </button>
         </div>
       </motion.div>
     </div>

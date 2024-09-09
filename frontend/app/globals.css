@@ -14,7 +14,7 @@
 } */
 
 :root {
-  --text: 220, 37%, 8%;
+  /* --text: 220, 37%, 8%;
   --background: 220, 37%, 97%;
   --primary: 220, 44%, 50%;
   --secondary: 219, 48%, 70%;
@@ -24,8 +24,13 @@
   --background: 193, 90%, 97%;
   --primary: 192, 90%, 51%;
   --secondary: 252, 90%, 73%;
-  --accent: 270, 90%, 60%;
+  --accent: 270, 90%, 60%; */
 
+  --text: 229, 95%, 16%;
+  --background: 209, 87%, 97%;
+  --primary: 222, 96%, 36%;
+  --secondary: 213, 92%, 74%;
+  --accent: 218, 95%, 52%;
   /* --text: hsl(246, 76%, 5%);
   --background: hsl(240, 60%, 99%);
   --primary: hsl(243, 68%, 48%);
@@ -91,9 +96,9 @@ body {
   }
 }
 
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
     display: none;
-}
+} */
 
 .scrollbar::-webkit-scrollbar {
   width: 10px;

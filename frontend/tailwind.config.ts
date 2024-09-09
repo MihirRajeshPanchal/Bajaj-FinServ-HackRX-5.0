@@ -13,11 +13,11 @@ const config: Config = {
   			poppins: ['Poppins', 'sans-serif']
   		},
 		  colors: {
-			  'text': '#010a0d',
-			  'background': '#f0fbfe',
-			  'primary': '#11c6f3',
-			  'secondary': '#937af8',
-			  'accent': '#993ef5',
+			  'text': '#021050',
+			  'background': '#f1f8fe',
+			  'primary': '#0439b4',
+			  'secondary': '#80b7fa',
+			  'accent': '#1066f9',
 		  }
   	}
   },

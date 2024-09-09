@@ -9,7 +9,7 @@ function WhyCard({ svg, heading, content }: { svg: string, heading: string, cont
   const Svg = (svg === "time")?<TimeSVG className=""/>:(svg === "realistic")?<RealisticSVG className=""/>:<SimpleSVG className=""/>
 
   return (
-    <div className="px-6 py-10 rounded-xl bg-secondary grid gap-6">
+    <div className="px-6 py-10 rounded-xl bg-gradient-to-b from-secondary to-accent grid gap-6">
       {Svg}
       <h3 className="text-white text-3xl text-center">{heading}</h3>
       <p className="text-white text-center">{content}</p>
@@ -20,7 +20,7 @@ function FaqCard() {
   const [faqActive,setFaqActive] = useState(false)
   
   return (
-    <div className={`faqCard | bg-accent text-white lg:max-w-screen-lg mx-auto p-4 rounded-xl grid transition-[grid-template-rows] ${faqActive?"grid-rows-[auto_1fr]":"grid-rows-[auto_0fr]"}`}>
+    <div className={`faqCard | bg-gradient-to-t from-primary to-accent text-white lg:max-w-screen-lg mx-auto p-4 rounded-xl grid transition-[grid-template-rows] ${faqActive?"grid-rows-[auto_1fr]":"grid-rows-[auto_0fr]"}`}>
       <div className="flex items-center justify-between">
         <p className="text-2xl font-semibold">How many colors should I choose?</p>
         <button onClick={()=>setFaqActive(!faqActive)}>open</button>
@@ -50,11 +50,11 @@ export default function Page() {
           <Character />
         </div>
         <div className="col-start-1 grid content-start lg:content-center">
-          <h1 className="leading-tight text-[clamp(3rem,8.6vw_+_1px,7.5rem)] font-bold">Heading,
-            <span className="inline-block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">HackRx</span>
+          <h1 className="leading-tight text-[clamp(3rem,8.6vw_+_1px,7.5rem)] font-bold">Bajaj 
+            <span className="~inline-block bg-gradient-to-l from-secondary to-accent bg-clip-text text-transparent"> HackRx 5.0 </span>
             -Kratos
           </h1>
-          <p className="mt-2 text-xl font-medium">A video & quiz generation tool from PDFs.</p>
+          <p className="mt-2 text-xl font-medium">From Documents to Dynamic Videos: Transforming Content, Engaging Minds.</p>
           <div className="mt-4 flex gap-3">
             <Link href="#how">
               <button className="py-3.5 px-6 rounded-full border-4 border-accent font-medium hover:bg-accent hover:text-white transition-colors">How does it work?</button>
@@ -131,7 +131,7 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="how | mt-20 grid gap-12 lg:grid-cols-[1.5fr_repeat(2,1fr)] px-6 py-12 lg:py-36 bg-primary rounded-xl">
+        <div className="how | mt-20 grid gap-12 lg:grid-cols-[1.5fr_repeat(2,1fr)] px-6 py-12 lg:py-36 bg-primary rounded-xl text-background">
           <div className="lg:row-span-2">
             <h2 className="text-[clamp(2rem,3.75vw_+_1px,3rem)] font-semibold">How Does it Work?</h2>
             <p className="text-2xl font-medium py-4">Get your personalized color palette in 4 steps.</p>
