@@ -16,3 +16,4 @@ faiss-cpu
 pyttsx3
 moviepy
 pdf2image
+edge-tts
