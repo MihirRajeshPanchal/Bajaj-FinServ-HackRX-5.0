@@ -1,36 +1,28 @@
 import os
 import os
-import pyttsx3
 from moviepy.editor import ImageClip, AudioFileClip, concatenate_videoclips
 from pdf2image import convert_from_path
 from moviepy.editor import *
+import edge_tts
 
 
-def init_text_to_speech_engine(rate=180, volume=1.0, voice_index=1):
-    """Initialize the text-to-speech engine with specified rate, volume, and voice."""
-    engine = pyttsx3.init()
-    voices = engine.getProperty("voices")
-    engine.setProperty("rate", rate)
-    engine.setProperty("volume", volume)
-    engine.setProperty("voice", voices[voice_index].id)
-    return engine
-
-
-def create_voiceover(engine, text, file_name):
+def create_voiceover(TEXT, OUTPUT_FILE):
     """Create a voiceover from text and save it as an mp3 file."""
-    engine.save_to_file(text, f"{file_name}.mp3")
-    engine.runAndWait()
+    VOICE = "en-GB-RyanNeural"
+    communicate = edge_tts.Communicate(TEXT, VOICE)
+    with open(OUTPUT_FILE+".mp3", "wb") as file:
+        for chunk in communicate.stream_sync():
+            if chunk["type"] == "audio":
+                file.write(chunk["data"])
 
 
-def generate_voiceovers(slides, engine, save_path):
+def generate_voiceovers(slides, save_path):
     """Generate voiceovers for all slides."""
     os.makedirs(save_path, exist_ok=True)
     for slide in slides:
         voiceover_text = slide["slide_voiceover"]
         slide_number = slide["slide_number"]
-        create_voiceover(
-            engine, voiceover_text, f"{save_path}/voiceover_slide_{slide_number}"
-        )
+        create_voiceover(voiceover_text, f"{save_path}/voiceover_slide_{slide_number}")
 
 
 def create_slide_video(image_path, audio_path, duration):

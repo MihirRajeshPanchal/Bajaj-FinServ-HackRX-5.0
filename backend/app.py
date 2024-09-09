@@ -54,7 +54,6 @@ from backend.video import (
     convert_pdf_to_images,
     create_slide_videos,
     generate_voiceovers,
-    init_text_to_speech_engine,
     save_final_presentation,
 )
 
@@ -63,12 +62,10 @@ os.makedirs("compute", exist_ok=True)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 @app.get("/")
 async def app_init():
@@ -507,11 +504,9 @@ async def create_video(video_model: VideoRequest):
         pdf_path = "compute/" + s3_file_path + f"{new_presentation_name}.pdf"
         
 
-        engine = init_text_to_speech_engine()
-
         save_path = "compute/" + s3_file_path
 
-        generate_voiceovers(slides, engine, save_path + "voiceovers")
+        generate_voiceovers(slides, save_path + "voiceovers")
 
         image_paths = convert_pdf_to_images(
             pdf_path, save_path + "images"
@@ -800,11 +795,9 @@ async def all_in_one(all_in_one_model : AllInOneRequest):
         pdf_path = "compute/" + s3_file_path + f"{new_presentation_name}.pdf"
         
 
-        engine = init_text_to_speech_engine()
-
         save_path = "compute/" + s3_file_path
 
-        generate_voiceovers(slides, engine, save_path + "voiceovers")
+        generate_voiceovers(slides, save_path + "voiceovers")
 
         image_paths = convert_pdf_to_images(
             pdf_path, save_path + "images"
