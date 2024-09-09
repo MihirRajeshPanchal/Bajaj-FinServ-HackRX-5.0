@@ -52,7 +52,7 @@ export async function getPageData(slug: string[]): Promise<PageData> {
     }),
   });
 
-  const videoData: string = await videoResponse.json();
+  const videoData = await videoResponse.json();
 
   const slideResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/slide_generate`, {
     method: 'POST',
@@ -77,7 +77,7 @@ export async function getPageData(slug: string[]): Promise<PageData> {
 
   return {
     content: summary,
-    videoUrl: "https://www.youtube.com/watch?v=1lCoQi1IcQ0",
+    videoUrl: videoData.video_url,
     transcript: transcript || 'No transcript available.',
   };
 }
