@@ -1,6 +1,9 @@
-"use client"
+"use client";
+
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Space_Mono } from "next/font/google";
+import { generateVideo } from '@/app/api/generateVideo';
+// import { encrypt } from "@/lib/encrypt"; 
 
 const font = Space_Mono({
   subsets: ["latin"],
@@ -23,6 +26,7 @@ export default function GenerateVideoForm() {
     pdf_link: '',
     presentation_id: '',
   });
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -32,20 +36,32 @@ export default function GenerateVideoForm() {
     }));
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    console.log('Form data:', formData);
+    try {
+      // const encryptedPresentationId = encrypt(formData.presentation_id);
+      const response = await generateVideo({
+        ...formData,
+        no_of_questions: 5,
+        num_slides: 4,
+        presentation_id: formData.presentation_id,
+      });
+      setVideoUrl(response.video_url);
+    } catch (error) {
+      console.error('Error generating video:', error);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 mx-auto">
         <div>
-          <h2 className={`mt-6 text-center text-3xl font-extrabold text-gray-900 ${font.className}`}>
+          <h2 className={`mt-2 text-center text-3xl font-extrabold text-gray-900 ${font.className}`}>
             Generate Video Lectures
           </h2>
         </div>
-        <form className="mt-8 space-y-6 border-1 p-8" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6 border-1 px-8" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm space-y-4">
             {(Object.keys(formData) as Array<keyof FormData>).map((key, index) => (
               <div key={key} className={index === 0 ? '' : 'mt-4'}>
@@ -75,6 +91,18 @@ export default function GenerateVideoForm() {
             </button>
           </div>
         </form>
+        {videoUrl && (
+          <div className="mt-4">
+            <h3 className="text-xl font-semibold">Generated Video</h3>
+            <div className='aspect-video'>
+            <iframe
+              src={videoUrl}
+              className="w-full h-full mt-4"
+              allowFullScreen
+            />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
-import { formatSlugForApi } from "@/lib/utils";
+import { formatBodyData } from "@/lib/utils";
   
   export async function getQuiz(slug: string[]) {
-    const [topic, plan, document] = slug.map(formatSlugForApi);
+    const [topic, plan, document] = slug.map(formatBodyData);
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz_generate`, {
       method: 'POST',
       headers: {

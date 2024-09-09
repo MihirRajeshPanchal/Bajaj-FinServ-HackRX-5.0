@@ -1,4 +1,4 @@
-import { formatSlugForApi } from "@/lib/utils";
+import { formatBodyData } from "@/lib/utils";
 
 interface Slide {
   slide_voiceover?: string;
@@ -23,7 +23,7 @@ interface PageData {
 }
 
 export async function getPageData(slug: string[]): Promise<PageData> {
-  const [topic, plan, document] = slug.map(formatSlugForApi);
+  const [topic, plan, document] = slug.map(formatBodyData);
 
   const summaryResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/summary_generate`, {
     method: 'POST',
