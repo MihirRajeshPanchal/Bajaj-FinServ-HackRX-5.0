@@ -7,39 +7,43 @@ import { toast, Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 
 type TranscriptSectionProps = {
-  transcript?: string;
+  transcript?: string[];
 };
 
-const TranscriptSection: React.FC<TranscriptSectionProps> = ({ transcript }) => {
+const TranscriptSection: React.FC<TranscriptSectionProps> = ({ transcript = [] }) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
 
   const handleCopy = () => {
-    if (transcript) {
-      navigator.clipboard.writeText(transcript)
-        .then(() => {
-          toast.success("Transcript copied successfully!");
-        })
-        .catch(() => {
-          toast.error("Failed to copy transcript.");
-        });
-    }
+    const fullTranscript = transcript.join("\n\n");
+    navigator.clipboard.writeText(fullTranscript)
+      .then(() => {
+        toast.success("Transcript copied successfully!");
+      })
+      .catch(() => {
+        toast.error("Failed to copy transcript.");
+      });
   };
 
-  if (!transcript) return null;
+  if (transcript.length === 0) return null;
 
   return (
     <div className="mt-8 border-t pt-4">
       <Toaster />
-      <Button 
+      <Button
         onClick={() => setIsExpanded(!isExpanded)}
         variant="board"
       >
         {isExpanded ? <ChevronUp className="mr-2" /> : <ChevronDown className="mr-2" />}
         {isExpanded ? "Hide Transcript" : "Show Transcript"}
       </Button>
+
       {isExpanded && (
         <div className="mt-4 bg-gray-100 p-4 rounded-lg relative">
-          <p>{transcript}</p>
+          {transcript.map((paragraph, index) => (
+            <p key={index} className="mb-4">
+              {paragraph}
+            </p>
+          ))}
           <div className="absolute top-2 right-2">
             <Hint label="Copy transcript" side="bottom" align="center" sideOffset={18}>
               <button 

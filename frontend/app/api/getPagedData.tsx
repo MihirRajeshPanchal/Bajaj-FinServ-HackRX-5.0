@@ -19,7 +19,7 @@ interface SlideResponse {
 interface PageData {
   content: string;
   videoUrl: string;
-  transcript: string;
+  transcript: string[];
 }
 
 export async function getPageData(slug: string[]): Promise<PageData> {
@@ -73,7 +73,7 @@ export async function getPageData(slug: string[]): Promise<PageData> {
   const transcript = slides
     .map(slide => slide.slide_voiceover)
     .filter((voiceover): voiceover is string => !!voiceover)
-    .join('\n\n');
+    
 
   return {
     content: summary,
