@@ -42,7 +42,7 @@ export default function Home() {
           <p className="text-lg mb-8">
             Discover the key features of HackRx and how it can help you streamline your workflow.
           </p>
-          <div className="mx-3 flex justify-center gap-8">
+          <div className="mx-3 flex flex-col lg:flex-row justify-center gap-8">
             <div className="feature-card bg-white p-6 rounded-lg shadow-md">
               <h3 className="text-2xl font-semibold mb-4">Generate Quizzes</h3>
               <p>Create quizzes from your PDFs to test knowledge and track progress.</p>

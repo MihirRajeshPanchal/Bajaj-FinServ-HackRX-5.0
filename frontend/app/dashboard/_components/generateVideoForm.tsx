@@ -39,7 +39,6 @@ export default function GenerateVideoForm() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Form data:', formData);
     try {
       // const encryptedPresentationId = encrypt(formData.presentation_id);
       const response = await generateVideo({
