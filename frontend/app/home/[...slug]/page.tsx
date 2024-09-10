@@ -61,7 +61,9 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
                 {pageData.content}
               </p>
             </section>
+            <section id="pdf">
             <PdfAccordion pdfLink={pageData.pdf_link} />
+            </section>
             <section id="video">
               <div className="text-2xl font-medium mb-3 border-t pt-8">
                 Video

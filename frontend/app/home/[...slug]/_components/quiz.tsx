@@ -79,7 +79,7 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white font-sans col-span-full"
+        className="flex flex-col items-center justify-center min-h-screen bg-background text-black font-sans col-span-full"
       >
         <h1 className="text-4xl font-bold mb-8">Quiz Finished!</h1>
         <p className="text-2xl mb-4">

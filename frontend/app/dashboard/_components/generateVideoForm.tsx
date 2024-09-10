@@ -3,6 +3,7 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Space_Mono } from "next/font/google";
 import { generateVideo } from '@/app/api/generateVideo';
+import { toast, Toaster } from 'sonner';
 // import { encrypt } from "@/lib/encrypt"; 
 
 const font = Space_Mono({
@@ -48,8 +49,10 @@ export default function GenerateVideoForm() {
         presentation_id: formData.presentation_id,
       });
       setVideoUrl(response.video_url);
+      toast.success('Video generated successfully');
     } catch (error) {
       console.error('Error generating video:', error);
+      toast.error('Error generating video');
     }
   };
 
@@ -83,6 +86,7 @@ export default function GenerateVideoForm() {
           </div>
 
           <div>
+            <Toaster />
             <button
               type="submit"
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-b from-primary to-accent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 shadow-lg"

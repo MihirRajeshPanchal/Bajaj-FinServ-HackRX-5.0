@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowDown, ArrowUp } from "lucide-react";
 import React, { useState } from "react";
 
 interface PdfAccordionProps {
@@ -16,7 +17,7 @@ const PdfAccordion: React.FC<PdfAccordionProps> = ({ pdfLink }) => {
         className="bg-accent bg-opacity-40 text-text px-4 py-2 mt-4 rounded-md hover:bg-accent hover:bg-opacity-50 transition w-full flex justify-between items-center"
       >
         {isPdfOpen ? "Hide PDF" : "Show PDF"}
-        <span>{isPdfOpen ? "⬆️" : "⬇️"}</span>
+        <span>{isPdfOpen ? <ArrowUp /> : <ArrowDown />}</span>
       </button>
 
       {isPdfOpen && (
