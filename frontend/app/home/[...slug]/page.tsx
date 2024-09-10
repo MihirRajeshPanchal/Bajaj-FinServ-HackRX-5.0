@@ -10,6 +10,7 @@ import { getQuiz } from "../../api/getQuiz";
 import { getPageData } from "@/app/api/getPageData";
 import Link from "next/link";
 import { HomeIcon, MoveLeft } from "lucide-react";
+import PdfAccordion from "./_components/pdfAccordion";
 
 const font = Space_Mono({
   subsets: ["latin"],
@@ -47,7 +48,7 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
         <p className={cn("text-sm text-gray-500 mb-2 underline underline-offset-8", font.className)}>
           {context}
         </p>
-        <h1 className={cn("text-4xl font-bold mb-16 mt-4", font.className)}>
+        <h1 className={cn("text-4xl font-bold mb-8 mt-4", font.className)}>
           {title}
         </h1>
         <div className="flex gap-8">
@@ -60,7 +61,7 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
                 {pageData.content}
               </p>
             </section>
-
+            <PdfAccordion pdfLink={pageData.pdf_link} />
             <section id="video">
               <div className="text-2xl font-medium mb-3 border-t pt-8">
                 Video

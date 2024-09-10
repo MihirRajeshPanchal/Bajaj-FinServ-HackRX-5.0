@@ -19,6 +19,7 @@ interface SlideResponse {
 interface PageData {
   content: string;
   videoUrl: string;
+  pdf_link: string;
   transcript: string[];
 }
 
@@ -54,6 +55,20 @@ export async function getPageData(slug: string[]): Promise<PageData> {
 
   const videoData = await videoResponse.json();
 
+  const pdfResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pdf_link`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      topic,
+      plan,
+      document,
+    }),
+  });
+
+  const pdfData = await pdfResponse.json();
+
   const slideResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/slide_generate`, {
     method: 'POST',
     headers: {
@@ -78,6 +93,7 @@ export async function getPageData(slug: string[]): Promise<PageData> {
   return {
     content: summary,
     videoUrl: videoData.video_url,
+    pdf_link: pdfData.pdf_url,
     transcript: transcript || 'No transcript available.',
   };
 }
