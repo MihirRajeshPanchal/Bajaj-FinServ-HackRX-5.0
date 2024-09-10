@@ -1,3 +1,4 @@
+from fileinput import filename
 from io import BytesIO
 import json
 import re
@@ -8,6 +9,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import ValidationError
 from backend.aws import (
     BajajBucket,
+    check_pdf_in_s3,
     download_from_s3,
     download_s3_folder,
     dump_quiz_response_to_dynamodb,
@@ -30,6 +32,7 @@ from backend.auth import get_user_info, load_credentials
 from backend.models import (
     AllInOneRequest,
     FrontendJson,
+    PDFRequest,
     QuizRequest,
     QuizResponse,
     RagRequest,
@@ -204,7 +207,9 @@ async def rag_embed(rag_request: RagRequest):
         pdf_directory = "pdfs/"
         os.makedirs(compute_directory, exist_ok=True)
         os.makedirs(pdf_directory, exist_ok=True)
-
+        new_presentation_name = (
+            rag_request.topic + " " + rag_request.plan + " " + rag_request.document
+        )
         local_embedding_path = os.path.join(
             compute_directory,
             f"{rag_request.topic}/{os.path.splitext(rag_request.plan)[0]}/{rag_request.document}/faiss_index/index.faiss",
@@ -224,7 +229,7 @@ async def rag_embed(rag_request: RagRequest):
             return {"response": "Embedding downloaded from S3"}
         except FileNotFoundError:
             file_path = os.path.join(
-                pdf_directory, os.path.basename(rag_request.pdf_link)
+                pdf_directory, "Display " + new_presentation_name + ".pdf"
             )
 
             response = requests.get(rag_request.pdf_link)
@@ -234,7 +239,7 @@ async def rag_embed(rag_request: RagRequest):
             else:
                 raise HTTPException(status_code=404, detail="Failed to download PDF")
 
-            pdf_s3_path = f"{rag_request.topic}/{os.path.splitext(rag_request.plan)[0]}/{rag_request.document}/{os.path.basename(file_path)}"
+            pdf_s3_path = f"{rag_request.topic}/{os.path.splitext(rag_request.plan)[0]}/{rag_request.document}/Display {new_presentation_name}.pdf"
             upload_pdf_to_s3(file_path, BajajBucket, pdf_s3_path)
             with open(file_path, "rb") as pdf_file:
                 pdf_bytes = pdf_file.read()
@@ -490,38 +495,50 @@ async def create_video(video_model: VideoRequest):
         )
         if "Item" in response:
             slides = json.loads(response["Item"]["json_data"])
-        slides = slides["text"]["slides"]
-        s3_file_path = f"{video_model.topic}/{video_model.plan}/{video_model.document}/"
-        presentation_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pptx")
-        pdf_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pdf")
-        
-        with open("compute/" + s3_file_path + f"{new_presentation_name}.pptx", "wb") as f:
-            f.write(presentation_file.getvalue())
+            slides = slides["text"]["slides"]
+            s3_file_path = f"{video_model.topic}/{video_model.plan}/{video_model.document}/"
+            presentation_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pptx")
+            pdf_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pdf")
             
-        with open("compute/" + s3_file_path + f"{new_presentation_name}.pdf", "wb") as f:
-            f.write(pdf_file.getvalue())
+            with open("compute/" + s3_file_path + f"{new_presentation_name}.pptx", "wb") as f:
+                f.write(presentation_file.getvalue())
+                
+            with open("compute/" + s3_file_path + f"{new_presentation_name}.pdf", "wb") as f:
+                f.write(pdf_file.getvalue())
 
-        pdf_path = "compute/" + s3_file_path + f"{new_presentation_name}.pdf"
-        
+            pdf_path = "compute/" + s3_file_path + f"{new_presentation_name}.pdf"
+            
 
-        save_path = "compute/" + s3_file_path
+            save_path = "compute/" + s3_file_path
 
-        generate_voiceovers(slides, save_path + "voiceovers")
+            generate_voiceovers(slides, save_path + "voiceovers")
 
-        image_paths = convert_pdf_to_images(
-            pdf_path, save_path + "images"
+            image_paths = convert_pdf_to_images(
+                pdf_path, save_path + "images"
+            )
+
+            slide_videos = create_slide_videos(slides, image_paths, save_path + "voiceovers")
+
+            save_final_presentation(
+                slide_videos,
+                f"compute/{s3_file_path}{video_model.topic} {video_model.plan} {video_model.document}.mp4",
+            )
+            final_video_path = f"compute/{s3_file_path}{video_model.topic} {video_model.plan} {video_model.document}.mp4"
+            s3_key = f"{video_model.topic}/{video_model.plan}/{video_model.document}/{new_presentation_name}.mp4"
+            video_url = upload_video_to_s3(final_video_path, BajajBucket, s3_key)
+            return {"video_url": video_url}
+
+@app.post("/pdf_link")
+async def pdf_link(pdf_request: PDFRequest):
+    try:
+        new_presentation_name = (
+            pdf_request.topic + " " + pdf_request.plan + " " + pdf_request.document
         )
-
-        slide_videos = create_slide_videos(slides, image_paths, save_path + "voiceovers")
-
-        save_final_presentation(
-            slide_videos,
-            f"compute/{s3_file_path}{video_model.topic} {video_model.plan} {video_model.document}.mp4",
-        )
-        final_video_path = f"compute/{s3_file_path}{video_model.topic} {video_model.plan} {video_model.document}.mp4"
-        s3_key = f"{video_model.topic}/{video_model.plan}/{video_model.document}/{new_presentation_name}.mp4"
-        video_url = upload_video_to_s3(final_video_path, BajajBucket, s3_key)
-        return {"video_url": video_url}
+        s3_file_path = f"{pdf_request.topic}/{pdf_request.plan}/{pdf_request.document}"
+        pdf_filename = "Display " + new_presentation_name + ".pdf"
+        return check_pdf_in_s3(BajajBucket,s3_file_path,pdf_filename)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))        
 
 @app.post("/all_in_one")
 async def all_in_one(all_in_one_model : AllInOneRequest):
@@ -532,7 +549,9 @@ async def all_in_one(all_in_one_model : AllInOneRequest):
         pdf_directory = "pdfs/"
         os.makedirs(compute_directory, exist_ok=True)
         os.makedirs(pdf_directory, exist_ok=True)
-
+        new_presentation_name = (
+            all_in_one_model.topic + " " + all_in_one_model.plan + " " + all_in_one_model.document
+        )
         local_embedding_path = os.path.join(
             compute_directory,
             f"{all_in_one_model.topic}/{os.path.splitext(all_in_one_model.plan)[0]}/{all_in_one_model.document}/faiss_index/index.faiss",
@@ -562,7 +581,7 @@ async def all_in_one(all_in_one_model : AllInOneRequest):
                 else:
                     raise HTTPException(status_code=404, detail="Failed to download PDF")
 
-                pdf_s3_path = f"{all_in_one_model.topic}/{os.path.splitext(all_in_one_model.plan)[0]}/{all_in_one_model.document}/{os.path.basename(file_path)}"
+                pdf_s3_path = f"{all_in_one_model.topic}/{os.path.splitext(all_in_one_model.plan)[0]}/{all_in_one_model.document}/Display {new_presentation_name}.pdf"
                 upload_pdf_to_s3(file_path, BajajBucket, pdf_s3_path)
                 with open(file_path, "rb") as pdf_file:
                     pdf_bytes = pdf_file.read()
@@ -781,39 +800,39 @@ async def all_in_one(all_in_one_model : AllInOneRequest):
         )
         if "Item" in response:
             slides = json.loads(response["Item"]["json_data"])
-        slides = slides["text"]["slides"]
-        s3_file_path = f"{all_in_one_model.topic}/{all_in_one_model.plan}/{all_in_one_model.document}/"
-        presentation_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pptx")
-        pdf_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pdf")
-        
-        with open("compute/" + s3_file_path + f"{new_presentation_name}.pptx", "wb") as f:
-            f.write(presentation_file.getvalue())
+            slides = slides["text"]["slides"]
+            s3_file_path = f"{all_in_one_model.topic}/{all_in_one_model.plan}/{all_in_one_model.document}/"
+            presentation_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pptx")
+            pdf_file = download_from_s3(BajajBucket, s3_file_path + f"{new_presentation_name}.pdf")
             
-        with open("compute/" + s3_file_path + f"{new_presentation_name}.pdf", "wb") as f:
-            f.write(pdf_file.getvalue())
+            with open("compute/" + s3_file_path + f"{new_presentation_name}.pptx", "wb") as f:
+                f.write(presentation_file.getvalue())
+                
+            with open("compute/" + s3_file_path + f"{new_presentation_name}.pdf", "wb") as f:
+                f.write(pdf_file.getvalue())
 
-        pdf_path = "compute/" + s3_file_path + f"{new_presentation_name}.pdf"
-        
+            pdf_path = "compute/" + s3_file_path + f"{new_presentation_name}.pdf"
+            
 
-        save_path = "compute/" + s3_file_path
+            save_path = "compute/" + s3_file_path
 
-        generate_voiceovers(slides, save_path + "voiceovers")
+            generate_voiceovers(slides, save_path + "voiceovers")
 
-        image_paths = convert_pdf_to_images(
-            pdf_path, save_path + "images"
-        )
+            image_paths = convert_pdf_to_images(
+                pdf_path, save_path + "images"
+            )
 
-        slide_videos = create_slide_videos(slides, image_paths, save_path + "voiceovers")
+            slide_videos = create_slide_videos(slides, image_paths, save_path + "voiceovers")
 
-        save_final_presentation(
-            slide_videos,
-            f"compute/{s3_file_path}{all_in_one_model.topic} {all_in_one_model.plan} {all_in_one_model.document}.mp4",
-        )
-        final_video_path = f"compute/{s3_file_path}{all_in_one_model.topic} {all_in_one_model.plan} {all_in_one_model.document}.mp4"
-        s3_key = f"{all_in_one_model.topic}/{all_in_one_model.plan}/{all_in_one_model.document}/{new_presentation_name}.mp4"
-        video_url = upload_video_to_s3(final_video_path, BajajBucket, s3_key)
-        print({"video_url": video_url})
-        all_in_one_final_response["video_url"] = video_url
+            save_final_presentation(
+                slide_videos,
+                f"compute/{s3_file_path}{all_in_one_model.topic} {all_in_one_model.plan} {all_in_one_model.document}.mp4",
+            )
+            final_video_path = f"compute/{s3_file_path}{all_in_one_model.topic} {all_in_one_model.plan} {all_in_one_model.document}.mp4"
+            s3_key = f"{all_in_one_model.topic}/{all_in_one_model.plan}/{all_in_one_model.document}/{new_presentation_name}.mp4"
+            video_url = upload_video_to_s3(final_video_path, BajajBucket, s3_key)
+            print({"video_url": video_url})
+            all_in_one_final_response["video_url"] = video_url
     print("All in One Process Ended")    
     return all_in_one_final_response
 

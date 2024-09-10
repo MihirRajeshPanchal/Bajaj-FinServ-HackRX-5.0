@@ -80,9 +80,10 @@ def build_slide(service, presentation_id, slide_request: Slide):
             text=slide_request.slide_disclaimer,
             x=1000000,
             y=1000000,
+            width=6000000,
             bold=True,
             underline=False,
-            fontsize=28,
+            fontsize=25,
         )
     if slide_request.slide_ending_note != None:
         add_custom_text_to_slide(

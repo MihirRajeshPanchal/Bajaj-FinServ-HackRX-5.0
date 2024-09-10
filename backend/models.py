@@ -69,7 +69,11 @@ class VideoRequest(BaseModel):
     plan: str
     document: str
 
-
+class PDFRequest(BaseModel):
+    topic: str
+    plan: str
+    document: str
+    
 class AllInOneRequest(BaseModel):
     topic: str
     plan: str

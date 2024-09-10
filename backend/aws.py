@@ -203,7 +203,7 @@ def download_from_s3(bucket_name: str, s3_key: str) -> BytesIO:
 def upload_pdf_to_s3(file_path, bucket_name, s3_file_path):
     try:
         with open(file_path, "rb") as pdf_file:
-            s3.upload_fileobj(pdf_file, bucket_name, s3_file_path)
+            s3.upload_fileobj(pdf_file, bucket_name, s3_file_path, ExtraArgs={"ContentDisposition": "inline", "ContentType": "application/pdf"},)
         return {"response": "PDF uploaded to S3"}
     except Exception as e:
         raise Exception(f"Failed to upload PDF to S3: {str(e)}")
@@ -282,3 +282,17 @@ def file_exists(s3_bucket, s3_file_path):
     except s3.exceptions.ClientError as e:
         if e.response["Error"]["Code"] == "404":
             return False
+
+def check_pdf_in_s3(bucket_name, file_path, file_name):
+    s3_key = f"{file_path}/{file_name}"
+    
+    try:
+        s3.head_object(Bucket=bucket_name, Key=s3_key)
+        pdf_url = f"https://{bucket_name}.s3.amazonaws.com/{s3_key}"
+        return {"pdf_url": pdf_url}
+    
+    except ClientError as e:
+        if e.response['Error']['Code'] == '404':
+            return {"response": "File does not exist"}
+        else:
+            raise Exception(f"Error occurred while checking file in S3: {str(e)}")
