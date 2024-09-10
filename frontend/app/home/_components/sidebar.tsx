@@ -11,7 +11,7 @@ import {
   faFilePen,
   faFileShield
 } from '@fortawesome/free-solid-svg-icons';
-import { ChevronDown, Folder, ChevronRight, File, FileText  } from 'lucide-react';
+import { ChevronDown, Folder, ChevronRight, File, FileText, Menu  } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -76,16 +76,31 @@ export type SidebarProps = {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ data }) => {
+  // const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  // const toggleSidebar = () => {
+  //   setIsSidebarOpen(!isSidebarOpen);
+  // };
+
   return (
-    <aside id="logo-sidebar" className="~bg-[hsl(260,100%,93%)] pt-14 h-screen overflow-hidden shadow-md sticky top-0" aria-label="Sidebar">
-      <div className="scrollbar | h-full overflow-y-auto p-3">
-        <ul className="space-y-4 font-medium">
-          {data.map((item, index) => (
-            <SidebarItem key={index} item={item} />
-          ))}
-        </ul>
-      </div>
-    </aside>
+    <>
+      {/* <button
+        className="fixed top-16 left-2 z-30 md:hidden"
+        onClick={toggleSidebar}
+      >
+        <Menu className="w-6 h-6" />
+      </button> */}
+      
+      <aside id="logo-sidebar" className={`~bg-[hsl(260,100%,93%)] pt-14 h-screen overflow-hidden shadow-md sticky top-0 md:translate-x-0 transition duration-200 ease-in-out z-20`} aria-label="Sidebar">
+        <div className="scrollbar | h-full overflow-y-auto p-3">
+          <ul className="space-y-4 font-medium">
+            {data.map((item, index) => (
+              <SidebarItem key={index} item={item} />
+            ))}
+          </ul>
+        </div>
+      </aside>
+    </>
   );
 };
 
