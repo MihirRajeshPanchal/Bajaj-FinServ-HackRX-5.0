@@ -13,8 +13,8 @@ function WhyCard({ svg, heading, content, color }: { svg: string, heading: strin
       <div className="flex justify-center items-center">
         {Svg}
       </div>
-      <h3 className="text-white text-3xl text-center">{heading}</h3>
-      <p className="text-white text-center">{content}</p>
+      <h3 className="text-text text-3xl text-center">{heading}</h3>
+      <p className="text-text text-opacity-85 text-center">{content}</p>
     </div>
   );
 }
