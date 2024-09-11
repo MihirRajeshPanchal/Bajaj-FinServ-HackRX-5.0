@@ -15,7 +15,7 @@ const font = Space_Mono({
 });
 
 const TableOfContents: React.FC<TableOfContentsProps> = ({ content }) => {
-  const toc = React.useMemo(() => ["Introduction", "pdf", "Video", "Transcript", "Quiz"], []);
+  const toc = React.useMemo(() => ["Introduction", "PDF", "Video", "Transcript", "Quiz"], []);
 
   const [currentSection, setCurrentSection] = useState<string>("");
 

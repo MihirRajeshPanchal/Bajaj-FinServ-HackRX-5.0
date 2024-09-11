@@ -21,14 +21,14 @@ const Sidebar: React.FC = () => {
   return (
     <>
       <button
-        className="fixed top-4 left-2 z-20 md:hidden"
+        className={`fixed top-[4.5rem] left-2 z-20 translate-y-0.5 lg:hidden hover:bg-background p-2 ${isSidebarOpen && 'adminSidebarOpen'}`}
         onClick={toggleSidebar}
       >
         <Menu className="w-6 h-6" />
       </button>
 
-      <div className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition duration-200 ease-in-out flex flex-col h-screen w-64 bg-white border-r ~pt-14 z-10`}>
-        <div className="flex items-center justify-center h-16 border-b">
+      <div className={`pt-14 fixed inset-y-0 left-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:relative lg:translate-x-0 transition duration-200 ease-in-out flex flex-col h-screen w-64 bg-white border-r ~pt-14 z-10`}>
+        <div className="flex items-center justify-center py-6 ps-9 lg:ps-0 border-b">
           <span className="text-xl font-semibold">Admin Dashboard</span>
         </div>
         <nav className="flex-grow">

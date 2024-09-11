@@ -21,7 +21,7 @@ export default function RootLayout({
       <body className={`${poppins.className} min-h-svh grid *:[grid-area:1/-1]`}>
         <GridBackground/>
         <Navbar/>
-        <div className="pt-14 lg:pt-0 z-10">
+        <div className="z-10">
         {children}
         </div>
       </body>

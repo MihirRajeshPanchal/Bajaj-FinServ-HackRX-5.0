@@ -17,7 +17,7 @@ const QuizButton: React.FC<QuizButtonProps> = ({ path }) => {
   return (
     <button
       onClick={handleQuizClick}
-      className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 mt-8 rounded-full hover:from-blue-600 hover:to-purple-700 transition duration-300 shadow-lg"
+      className="mx-auto block h-full py-3.5 px-6 rounded-full bg-accent font-medium text-white shadow-[4px_4px_black] -translate-x-0.5 -translate-y-0.5 hover:translate-x-0 hover:translate-y-0 hover:shadow-[0px_0px_black] transition-[transform,box-shadow]"
     >
       Take Quiz
     </button>

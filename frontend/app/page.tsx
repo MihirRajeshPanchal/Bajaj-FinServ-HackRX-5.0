@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Character from "@/components/ui/Character";
 import Link from "next/link";
-import { RealisticSVG, SimpleSVG, TimeSVG } from "@/assets/svgs/svgs";
+import { GitHub, RealisticSVG, SimpleSVG, TimeSVG } from "@/assets/svgs/svgs";
 import { AnimatePresence, motion } from "framer-motion";
 
 function WhyCard({ svg, heading, content, color }: { svg: string, heading: string, content: string, color: string }) {
@@ -144,7 +144,10 @@ export default function Page() {
         <h2 className="mt-20 text-center text-[clamp(2rem,3.75vw_+_1px,3rem)] font-semibold">Made with love by Kratos - the HackRx Dev Team 💝</h2>
         <p className="text-center text-lg">Checkout the GitHub Repository</p>
         <Link href="https://github.com/MihirRajeshPanchal/Bajaj-FinServ-HackRX-5.0" target="_blank">
-          <p className="w-fit mx-auto py-2 px-6 rounded-lg mt-4 bg-black text-white font-medium">GitHub</p>
+          <p className="w-fit mx-auto p-3 rounded-lg mt-4 bg-black text-white font-medium flex items-center gap-2">
+            <GitHub/>
+            GitHub
+          </p>
         </Link>
       </main>
     </div>

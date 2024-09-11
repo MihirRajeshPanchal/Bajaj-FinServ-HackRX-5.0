@@ -13,7 +13,7 @@ const poppins = Poppins({
 
 export default function Home() {
   return (
-    <div className="pageWrapper lg:px-12l overflow-hidden">
+    <div className="pageWrapper lg:px-12l overflow-hidden [grid-area:1/-1] lg:[grid-area:auto]">
     <section className="hero min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-blue-100 to-purple-200 text-text text-center py-16">
         <h1 className={cn("text-5xl lg:text-7xl font-bold mb-4", poppins.className)}>
             Get Started 
