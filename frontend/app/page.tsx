@@ -6,7 +6,7 @@ import FaqCard from "@/components/ui/FaqCard";
 
 export default function Page() {
   return (
-    <div className="pageWrapper ff-space-grotesk | pt-14 px-6 lg:px-12 overflow-hidden">
+    <div className="pageWrapper ff-space-grotesk | pt-14 lg:pt-0 px-6 lg:px-12 overflow-hidden">
       <div className="hero | min-h-svh grid gap-4 ~auto-rows-fr lg:grid-cols-[1fr_0.75fr] lg:grid-flow-col">
         <div className="grid *:[grid-area:1/-1] content-center p-4 lg:px-16">
           <div className="blurredCircles | relative w-1/2 h-1/2 place-self-center animate-spin [animation-duration:36s]">
