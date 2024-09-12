@@ -40,7 +40,7 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
   const currentPath = `/home/${contentSlug.join("/")}`;
 
   return (
-    <div className="grid grid-flow-col gap-4 pt-14">
+    <div className="grid grid-flow-col gap-4 pt-14 [grid-area:1/-1] lg:[grid-area:auto]">
       <div className="py-16 px-[clamp(2rem,3.125vw,4rem)]">
         <Link href="/home" className={`flex items-center gap-2 text-sm text-gray-500 mb-2 hover:text-text hover:gap-4 transition-[color,gap] ${font.className}`}>
           <MoveLeft/> Home
@@ -89,7 +89,7 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
               <TranscriptSection transcript={pageData.transcript} />
             </section>
 
-            <section id="quiz">
+            <section id="quiz" className="mt-8">
               <QuizButton path={currentPath} />
             </section>
           </div>

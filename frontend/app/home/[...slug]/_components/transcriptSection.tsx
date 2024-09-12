@@ -36,26 +36,27 @@ const TranscriptSection: React.FC<TranscriptSectionProps> = ({ transcript = [] }
         {isExpanded ? <ChevronUp className="mr-2" /> : <ChevronDown className="mr-2" />}
         {isExpanded ? "Hide Transcript" : "Show Transcript"}
       </Button>
-
-      {isExpanded && (
-        <div className="mt-4 bg-gray-100 p-4 rounded-lg relative">
-          {transcript.map((paragraph, index) => (
-            <p key={index} className="mb-4">
-              {paragraph}
-            </p>
-          ))}
-          <div className="absolute top-2 right-2">
-            <Hint label="Copy transcript" side="bottom" align="center" sideOffset={18}>
-              <button 
-                onClick={handleCopy} 
-                className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
-              >
-                <Copy size={16} />
-              </button>
-            </Hint>
+      <div className={`grid transition-[grid-template-rows] duration-700 ${isExpanded?"grid-rows-[1fr]":"grid-rows-[0fr]"}`}>
+        {isExpanded && (
+          <div className="mt-4 bg-gray-100 p-4 rounded-lg relative overflow-hidden">
+            {transcript.map((paragraph, index) => (
+              <p key={index} className="mb-4">
+                {paragraph}
+              </p>
+            ))}
+            <div className="absolute top-2 right-2">
+              <Hint label="Copy transcript" side="bottom" align="center" sideOffset={18}>
+                <button 
+                  onClick={handleCopy} 
+                  className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
+                >
+                  <Copy size={16} />
+                </button>
+              </Hint>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

@@ -12,6 +12,13 @@
 /* * {
   outline: solid;
 } */
+:root:has(.smooth-scroll) {
+  scroll-behavior: smooth;
+}
+:root:has(#landingHow) {
+  --navbar: 3.5rem;
+  scroll-padding-top: calc(var(--navbar) + 1rem);
+}
 
 :root {
   /* --text: 220, 37%, 8%;
@@ -100,8 +107,11 @@ body {
     display: none;
 } */
 
+.scrollbar {
+  overscroll-behavior: contain;
+}
 .scrollbar::-webkit-scrollbar {
-  width: 10px;
+  width: 5px;
 }
 
 .scrollbar::-webkit-scrollbar-thumb {
@@ -117,9 +127,45 @@ body {
   margin-top: 0.5rem;
 }
 
+@media (width < 1024px) {
+  .adminSidebarOpen ~ main {
+    position: relative;
+  }
+  
+  .adminSidebarOpen ~ main::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: hsl(0 0% 0% / 0.5);
+  }
+}
+
+.animateHeight {
+  --height: 600px;
+  --duration: 500ms;
+  animation: animateHeight var(--duration);
+}
+
+.whyCard:first-child {
+  --delay: 0ms;
+}
+.whyCard:nth-child(2) {
+  --delay: 100ms;
+}
+.whyCard:last-child {
+  --delay: 200ms;
+}
 
 @keyframes gridBgMove {
 	to {
 		background-position-y: var(--blockSize), var(--blockSize);
 	}
+}
+@keyframes animateHeight {
+  from {
+    height: 0px;
+  }
+  to {
+    height: var(--height);
+  }
 }

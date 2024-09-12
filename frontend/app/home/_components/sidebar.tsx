@@ -76,23 +76,23 @@ export type SidebarProps = {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ data }) => {
-  // const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
-  // const toggleSidebar = () => {
-  //   setIsSidebarOpen(!isSidebarOpen);
-  // };
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   return (
     <>
-      {/* <button
-        className="fixed top-16 left-2 z-30 md:hidden"
+      <button
+        className="fixed top-16 left-3 z-30 lg:hidden"
         onClick={toggleSidebar}
       >
         <Menu className="w-6 h-6" />
-      </button> */}
+      </button>
       
-      <aside id="logo-sidebar" className={`~bg-[hsl(260,100%,93%)] pt-14 h-screen overflow-hidden shadow-md sticky top-0 md:translate-x-0 transition duration-200 ease-in-out z-20`} aria-label="Sidebar">
-        <div className="scrollbar | h-full overflow-y-auto p-3">
+      <aside id="logo-sidebar" className={`bg-background [grid-area:1/-1] lg:[grid-area:auto] w-fit pt-14 h-screen overflow-hidden shadow-md sticky top-0 z-20 lg:translate-x-0 transition-transform ${isSidebarOpen?"translate-x-0":"-translate-x-full"}`} aria-label="Sidebar">
+        <div className="scrollbar | h-full overflow-y-auto p-3 pt-6">
           <ul className="space-y-4 font-medium">
             {data.map((item, index) => (
               <SidebarItem key={index} item={item} />

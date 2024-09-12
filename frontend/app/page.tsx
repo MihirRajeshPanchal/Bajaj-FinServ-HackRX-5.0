@@ -1,72 +1,18 @@
-"use client"
-import { useState } from "react";
 import Character from "@/components/ui/Character";
 import Link from "next/link";
-import { RealisticSVG, SimpleSVG, TimeSVG } from "@/assets/svgs/svgs";
-import { AnimatePresence, motion } from "framer-motion";
-
-function WhyCard({ svg, heading, content, color }: { svg: string, heading: string, content: string, color: string }) {
-  const Svg = (svg === "time") ? <TimeSVG color={color} /> : (svg === "realistic") ? <RealisticSVG color={color} /> : <SimpleSVG color={color} />;
-
-  return (
-    <div className="px-6 py-10 rounded-xl bg-gradient-to-b from-[#e5ebf6] to-[#0e9fc4] grid gap-6 border border-b-stone-900">
-      <div className="flex justify-center items-center">
-        {Svg}
-      </div>
-      <h3 className="text-text text-3xl text-center">{heading}</h3>
-      <p className="text-text text-opacity-85 text-center">{content}</p>
-    </div>
-  );
-}
-
-
-
-function FaqCard({ title, content }: { title: string, content: string }) {
-  const [isActive, setIsActive] = useState(false);
-
-  const handleClick = () => {
-    setIsActive(!isActive);
-  };
-
-  return (
-    <div
-      className="p-4 rounded-lg mx-auto my-2 w-full cursor-pointer border border-b-stone-900"
-      style={{ backgroundColor: '#e5ebf6', borderBottom: '1px solid #d1d5db' }}
-      onClick={handleClick}
-    >
-      <div className="flex justify-between items-center ">
-        <h3 className="text-lg font-semibold">{title}</h3>
-        <span className="text-blue-500 font-bold text-xl">
-          {isActive ? '-' : '+'}
-        </span>
-      </div>
-      <AnimatePresence>
-        {isActive && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.1 }}
-            className="overflow-hidden mt-4"
-          >
-            <p className="text-gray-700">{content}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
+import { GitHub } from "@/assets/svgs/svgs";
+import WhyCard from "@/components/ui/WhyCard";
+import FaqCard from "@/components/ui/FaqCard";
 
 export default function Page() {
   return (
-    <div className="pageWrapper ff-space-grotesk | px-6 lg:px-12 overflow-hidden">
+    <div className="pageWrapper ff-space-grotesk | pt-14 px-6 lg:px-12 overflow-hidden">
       <div className="hero | min-h-svh grid gap-4 ~auto-rows-fr lg:grid-cols-[1fr_0.75fr] lg:grid-flow-col">
         <div className="grid *:[grid-area:1/-1] content-center p-4 lg:px-16">
           <div className="blurredCircles | relative w-1/2 h-1/2 place-self-center animate-spin [animation-duration:36s]">
-            <div className="absolute w-[200%] h-[200%] rounded-full bg-primary blur-[70px] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"></div>
-            <div className="absolute w-full h-full rounded-full bg-accent blur-[70px] -translate-y-1/2 -translate-x-1/2"></div>
-            <div className="absolute w-full h-full rounded-full bg-accent blur-[70px] -translate-y-1/2 translate-x-1/2"></div>
+            <div className="absolute w-[200%] h-[200%] rounded-full bg-primary blur-[25px] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+            <div className="absolute w-full h-full rounded-full bg-accent blur-[25px] -translate-y-1/2 -translate-x-1/2"></div>
+            <div className="absolute w-full h-full rounded-full bg-accent blur-[25px] -translate-y-1/2 translate-x-1/2"></div>
           </div>
           <Character />
         </div>
@@ -75,28 +21,27 @@ export default function Page() {
             <span className="~inline-block bg-gradient-to-l from-secondary to-accent bg-clip-text text-transparent"> HackRx 5.0 </span>
             Kratos
           </h1>
-          <p className="mt-2 text-xl font-medium">From Documents to Dynamic Videos: Transforming Content, Engaging Minds.</p>
+          <p className="mt-2 lg:text-xl font-medium">From Documents to Dynamic Videos: Transforming Content, Engaging Minds.</p>
           <div className="mt-4 flex gap-3">
-            <Link href="#how">
-              <button className="py-3.5 px-6 rounded-full border-4 border-accent font-medium hover:bg-accent hover:text-white transition-colors">How does it work?</button>
+            <Link href="#landingHow">
+              <button className="text-xs lg:text-base py-3.5 px-6 rounded-full border-4 border-accent font-medium hover:bg-accent hover:text-white transition-colors">How does it work?</button>
             </Link>
             <Link href="/home">
-              <button className="h-full py-3.5 px-6 rounded-full bg-accent font-medium text-white shadow-[4px_4px_black] -translate-x-0.5 -translate-y-0.5 hover:translate-x-0 hover:translate-y-0 hover:shadow-[0px_0px_black] transition-[transform,box-shadow]">Get Started</button>
+              <button className="text-xs lg:text-base h-full py-3.5 px-6 rounded-full bg-accent font-medium text-white shadow-[4px_4px_black] -translate-x-0.5 -translate-y-0.5 hover:translate-x-0 hover:translate-y-0 hover:shadow-[0px_0px_black] transition-[transform,box-shadow]">Get Started</button>
             </Link>
           </div>
         </div>
       </div>
-      <main className="w-[min(1600px,100%_-_3rem)] mx-auto mt-20 pb-8">
+      <main className="w-[min(1600px,100%)] mx-auto mt-20 pb-8">
         <div className="why">
-          <h2 className="text-center text-[clamp(2rem,3.75vw_+_1px,3rem)] font-semibold">Why Kratos?</h2>
-          <div className="grid lg:grid-flow-col gap-8 mt-3">
-            <WhyCard svg="time" heading="AI-Powered Video Generation" content="Automatically convert brochures and PDFs into engaging, visually-appealing videos with dynamic transitions and voiceovers." color="#140f37"/>
-            <WhyCard svg="realistic" heading="Interactive Quizzes" content="Generate customized quizzes from the video content to enhance user comprehension and engagement." color="#140f37"/>
-            <WhyCard svg="simple" heading="Advanced Analytics Dashboard" content="Track user interactions with detailed metrics such as video playtime, quiz performance, and engagement insights." color="#140f37"/>
-          </div>
+            <h2 className="text-center text-[clamp(2rem,3.75vw_+_1px,3rem)] font-semibold">Why Kratos?</h2>
+            <div className="grid lg:grid-flow-col gap-8 mt-3">
+                <WhyCard svg="time" heading="AI-Powered Video Generation" content="Automatically convert brochures and PDFs into engaging, visually-appealing videos with dynamic transitions and voiceovers." color="#140f37" />
+                <WhyCard svg="realistic" heading="Interactive Quizzes" content="Generate customized quizzes from the video content to enhance user comprehension and engagement." color="#140f37" />
+                <WhyCard svg="simple" heading="Advanced Analytics Dashboard" content="Track user interactions with detailed metrics such as video playtime, quiz performance, and engagement insights." color="#140f37" />
+            </div>
         </div>
-
-        <div className="how | mt-20 grid gap-12 lg:grid-cols-[1.5fr_repeat(2,1fr)] px-6 py-12 lg:py-36 bg-gradient-to-r from-[#e5ebf6] to-[#0e9fc4] rounded-xl text-text border border-b-stone-900">
+        <div id="landingHow" className="how smooth-scroll | mt-20 grid gap-12 lg:grid-cols-[1.5fr_repeat(2,1fr)] px-6 py-12 lg:py-36 bg-gradient-to-r from-[#e5ebf6] to-[#0e9fc4] rounded-xl text-text border border-b-stone-900">
 
           <div className="lg:row-span-2">
             <h2 className="text-[clamp(2rem,3.75vw_+_1px,3rem)] font-semibold">How Does it Work?</h2>
@@ -144,7 +89,10 @@ export default function Page() {
         <h2 className="mt-20 text-center text-[clamp(2rem,3.75vw_+_1px,3rem)] font-semibold">Made with love by Kratos - the HackRx Dev Team 💝</h2>
         <p className="text-center text-lg">Checkout the GitHub Repository</p>
         <Link href="https://github.com/MihirRajeshPanchal/Bajaj-FinServ-HackRX-5.0" target="_blank">
-          <p className="w-fit mx-auto py-2 px-6 rounded-lg mt-4 bg-black text-white font-medium">GitHub</p>
+          <p className="w-fit mx-auto p-3 rounded-lg mt-4 bg-black text-white font-medium flex items-center gap-2">
+            <GitHub/>
+            GitHub
+          </p>
         </Link>
       </main>
     </div>

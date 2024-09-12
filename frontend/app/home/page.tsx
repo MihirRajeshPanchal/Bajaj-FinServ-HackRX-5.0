@@ -1,41 +1,44 @@
 import { Poppins, Space_Mono } from "next/font/google";
 import { cn } from "@/lib/utils";
 import React from "react";
+import Link from "next/link";
 
 const font = Space_Mono({
   subsets: ["latin"],
   weight: ["400", "700"],
 });
 const poppins = Poppins({
-    subsets: ["latin"],
-    weight: ["400", "500", "600"],
-    });
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+});
 
 export default function Home() {
   return (
-    <div className="pageWrapper lg:px-12l overflow-hidden">
-    <section className="hero min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-blue-100 to-purple-200 text-text text-center py-16">
+    <div className="pageWrapper | lg:px-12l overflow-hidden [grid-area:1/-1] lg:[grid-area:auto]">
+      <section className="hero min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-blue-100 to-purple-200 text-text text-center py-16">
         <h1 className={cn("text-5xl lg:text-7xl font-bold mb-4", poppins.className)}>
-            Get Started 
+          Get Started
         </h1>
         <h1 className="text-5xl lg:text-7xl font-bold mb-4">
-            with {" "}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">HackRx</span>
+          with {" "}
+          <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">HackRx</span>
         </h1>
         <p className={cn("text-xl lg:text-2xl mb-8", font.className)}>
           From Documents to Dynamic Videos: Transforming Content, Engaging Minds.
         </p>
         <div className="flex gap-4">
+          <Link href="#howItWorks" className="smooth-scroll">
             <button className={cn("py-3 px-6 rounded-full border-2 border-white bg-transparent text-text font-medium hover:bg-white hover:text-blue-500 transition duration-300", font.className)}>
-                How it Works?
+              How it Works?
             </button>
-            {/* <button className={cn("py-3 px-6 rounded-full bg-white text-blue-500 font-medium shadow-lg hover:bg-gray-100 transition duration-300", font.className)}>
+          </Link>
+          {/* <button className={cn("py-3 px-6 rounded-full bg-white text-blue-500 font-medium shadow-lg hover:bg-gray-100 transition duration-300", font.className)}>
                 Get Started
             </button> */}
         </div>
-    </section>
+      </section>
 
-    {/* Get Started Section */}
+      {/* Get Started Section */}
       <section className="getStarted py-16 bg-gray-100">
         <div className="container mx-auto text-center">
           <h2 className={cn("text-4xl font-bold mb-6", font.className)}>Your Journey Starts Here</h2>
@@ -60,7 +63,7 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="howItWorks py-16">
+      <section id="howItWorks" className="howItWorks py-16">
         <div className="container mx-auto">
           <h2 className={cn("text-4xl font-bold text-center mb-8", font.className)}>How It Works</h2>
           <div className="mx-3 flex flex-col lg:flex-row gap-8">
@@ -85,7 +88,7 @@ export default function Home() {
       </section>
 
       {/* Explaining the /home Pages Section */}
-      <section className="explaining py-16 bg-gray-100">
+      <section className="explaining py-16 px-3 bg-gray-100">
         <div className="container mx-auto text-center">
           <h2 className={cn("text-4xl font-bold mb-6", font.className)}>Exploring the Home Pages</h2>
           <p className="text-lg">
@@ -95,7 +98,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="footer py-8 bg-gradient-to-r from-blue-100 to-purple-200 text-black text-center">
+      <footer className="footer py-8 px-3 bg-gradient-to-r from-blue-100 to-purple-200 text-black text-center">
         <p className="text-lg">Made with love by the HackRx Dev Team 💝</p>
       </footer>
     </div>

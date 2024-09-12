@@ -20,8 +20,11 @@ const PdfAccordion: React.FC<PdfAccordionProps> = ({ pdfLink }) => {
         <span>{isPdfOpen ? <ArrowUp /> : <ArrowDown />}</span>
       </button>
 
+      <div>
+
+      </div>
       {isPdfOpen && (
-        <div className="mt-4 border-t pt-4">
+        <div className="animateHeight | mt-4 border-t pt-4">
           <div className="w-full" style={{ height: "600px" }}>
             <iframe
               src={pdfLink}
