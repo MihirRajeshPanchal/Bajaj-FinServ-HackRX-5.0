@@ -42,6 +42,7 @@ QuizResponseTable = "bajaj_quiz_response"
 SummaryTable = "bajaj_summary"
 
 BajajBucket = "bajaj-bucket"
+BajajCredentials = "bajaj-credentials"
 
 usertable = dynamodb.Table(UserTable)
 quiztable = dynamodb.Table(QuizTable)

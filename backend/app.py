@@ -28,7 +28,7 @@ from backend.aws import (
     upload_video_to_s3,
 )
 from backend.constants import APP_NAME
-from backend.auth import get_user_info, load_credentials
+from backend.auth import authorize_credentials, get_user_info, load_credentials, save_credentials_to_s3
 from backend.models import (
     AllInOneRequest,
     FrontendJson,
@@ -78,10 +78,12 @@ async def app_init():
 @app.get("/auth")
 async def auth():
     try:
-        creds = load_credentials()
+        creds = authorize_credentials()
         user_info = get_user_info(creds)
         email = user_info.get("email")
+        save_credentials_to_s3(creds, email)
         store_email_in_dynamodb(email)
+
         return {"response": "Authorization Successful", "email": email}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
