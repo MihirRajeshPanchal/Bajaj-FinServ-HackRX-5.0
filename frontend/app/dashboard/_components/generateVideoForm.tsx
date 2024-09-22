@@ -16,7 +16,6 @@ interface FormData {
   plan: string;
   document: string;
   pdf_link: string;
-  presentation_id: string;
 }
 
 export default function GenerateVideoForm() {
@@ -24,8 +23,7 @@ export default function GenerateVideoForm() {
     topic: '',
     plan: '',
     document: '',
-    pdf_link: '',
-    presentation_id: '',
+    pdf_link: ''
   });
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
@@ -45,7 +43,7 @@ export default function GenerateVideoForm() {
         ...formData,
         no_of_questions: 5,
         num_slides: 4,
-        presentation_id: formData.presentation_id,
+        presentation_id: "1geabFeW17kXM6ybSPlLvF0LPmAg3IBX1cZmKuCsodUs",
       });
       setVideoUrl(response.video_url);
       toast.success('Video generated successfully');
@@ -94,18 +92,6 @@ export default function GenerateVideoForm() {
             </button>
           </div>
         </form>
-        {videoUrl && (
-          <div className="mt-4">
-            <h3 className="text-xl font-semibold">Generated Video</h3>
-            <div className='aspect-video'>
-            <iframe
-              src={videoUrl}
-              className="w-full h-full mt-4"
-              allowFullScreen
-            />
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

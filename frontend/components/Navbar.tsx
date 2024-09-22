@@ -1,5 +1,6 @@
 import Link from "next/link"
 import LoginButton from "./loginButton"
+import { GitHub } from "@/assets/svgs/svgs"
 
 export const Navbar = () => {
     return (
@@ -11,9 +12,15 @@ export const Navbar = () => {
                             <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap">Bajaj HackRx 5.0</span>
                         </Link>
                     </div>
-                    <div className="flex items-center">
+                    {/* <div className="flex items-center">
                         <LoginButton />
-                    </div>
+                    </div> */}
+                    <Link href="https://github.com/MihirRajeshPanchal/Bajaj-FinServ-HackRX-5.0" target="_blank">
+                        <p className="w-fit mx-auto p-3 rounded-lg bg-black text-white font-medium flex items-center gap-2">
+                            <GitHub />
+                            GitHub
+                        </p>
+                    </Link>
                 </div>
             </div>
         </nav>

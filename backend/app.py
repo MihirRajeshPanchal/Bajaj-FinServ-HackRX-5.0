@@ -27,7 +27,7 @@ from backend.aws import (
     upload_to_s3,
     upload_video_to_s3,
 )
-from backend.constants import APP_NAME
+from backend.constants import APP_NAME, EMAIL
 from backend.auth import authorize_credentials, get_user_info, load_credentials, save_credentials_to_s3
 from backend.models import (
     AllInOneRequest,
@@ -92,7 +92,7 @@ async def auth():
 @app.post("/slides")
 async def create_slides(slide_request: SlidesRequest):
     try:
-        creds = load_credentials()
+        creds = load_credentials(EMAIL)
         slides_service = slides_init(creds)
         drive_service = drive_init(creds)
         original_presentation_id = slide_request.presentation_id
@@ -692,7 +692,7 @@ async def all_in_one(all_in_one_model : AllInOneRequest):
 
     print("Slide Generation Started")
     try:
-        creds = load_credentials()
+        creds = load_credentials(EMAIL)
         slides_service = slides_init(creds)
         drive_service = drive_init(creds)
         original_presentation_id = all_in_one_model.presentation_id

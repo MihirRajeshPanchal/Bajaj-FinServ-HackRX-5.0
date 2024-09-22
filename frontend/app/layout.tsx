@@ -8,7 +8,7 @@ const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
   title: "Bajaj HackRx 5.0 Kratos",
-  description: "made by some really cool people",
+  description: "Bajaj HackRx 5.0 Kratos PS6 : Instant Video Creation Through Text",
 };
 
 export const revalidate = 0;
