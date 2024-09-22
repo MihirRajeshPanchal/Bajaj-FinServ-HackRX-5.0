@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   description: "made by some really cool people",
 };
 
+export const revalidate = 0;
+
 export default function RootLayout({
   children,
 }: Readonly<{
