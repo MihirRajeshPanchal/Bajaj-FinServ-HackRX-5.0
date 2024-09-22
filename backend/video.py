@@ -61,4 +61,4 @@ def create_slide_videos(slides, image_paths, save_path):
 def save_final_presentation(slide_videos, output_file, fps=24):
     """Concatenate slide videos and save the final presentation."""
     final_video = concatenate_videoclips(slide_videos)
-    final_video.write_videofile(output_file, fps=fps)
+    final_video.write_videofile(output_file, fps=fps, threads=4)
