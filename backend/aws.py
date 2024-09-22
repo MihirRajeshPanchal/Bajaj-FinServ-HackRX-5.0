@@ -92,7 +92,7 @@ def dump_summary_to_dynamodb(plan: str, json_data: Dict[str, Any]) -> None:
 
 
 def dump_quiz_response_to_dynamodb(
-    email: str,
+    uid: str,
     topic: str,
     plan: str,
     document: str,
@@ -104,8 +104,8 @@ def dump_quiz_response_to_dynamodb(
     """
     quizresponsetable.put_item(
         Item={
-            "id": email + " " + topic + " " + plan + " " + document,
-            "email": email,
+            "id": uid + " " + topic + " " + plan + " " + document,
+            "uid": uid,
             "topic": topic,
             "plan": plan,
             "document": document,

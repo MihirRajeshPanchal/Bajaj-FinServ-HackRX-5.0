@@ -432,7 +432,7 @@ async def summary_generate(summary_request: SummaryRequest):
 async def quiz_response(quiz_response_model: QuizResponse):
     try:
         dump_quiz_response_to_dynamodb(
-            quiz_response_model.email,
+            quiz_response_model.uid,
             quiz_response_model.topic,
             quiz_response_model.plan,
             quiz_response_model.document,

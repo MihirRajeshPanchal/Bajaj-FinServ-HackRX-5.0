@@ -30,7 +30,7 @@ class RagRequest(BaseModel):
 
 
 class QuizResponse(BaseModel):
-    email: str
+    uid: str
     topic: str
     plan: str
     document: str
