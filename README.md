@@ -89,13 +89,15 @@ Technologies used in the project:
   </a>
 </p>
 
-## Contributors of the Project
+
+
+<!-- ## Contributors of the Project
 <hr>
 <p align="start">
 <a  href="https://github.com/MihirRajeshPanchal/Bajaj-FinServ-HackRX-5.0/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=MihirRajeshPanchal/Bajaj-FinServ-HackRX-5.0"/>
 </a>
-</p>
+</p> -->
 
 <div align="center">
 
