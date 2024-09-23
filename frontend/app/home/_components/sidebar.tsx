@@ -39,7 +39,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ item, path = [] }) => {
     <li className={`${!hasChildren ? "fileNoChild | grid gap-1 grid-cols-[2px_1fr]" : "mt-2"}`}>
       {!hasChildren && <div className={`bg-accent ${!isActive && "bg-opacity-50"} transition-colors`}></div>}
       <Link href={href}
-        className={`flex items-center gap-1.5 p-2 ~text-gray-300 rounded-lg !bg-opacity-30 hover:bg-accent group ${isActive && "bg-accent"} ${hasChildren ? 'font-medium' : 'text-sm m-0.5'}`}
+        className={`group | flex items-center gap-1.5 p-2 ~text-gray-300 rounded-lg !bg-opacity-30 hover:bg-accent group ${isActive && "bg-accent"} ${hasChildren ? 'font-medium' : 'text-sm m-0.5'}`}
         onClick={(e) => {
           if (hasChildren) {
             e.preventDefault();
@@ -54,7 +54,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ item, path = [] }) => {
           </span>
         )}
         {hasChildren ? <Folder className="h-full p-0.5" /> : <FileText className="h-5 p-0.5 pe-0" />}
-        <span className="flex-1 whitespace-nowrap">{item.name}</span>
+        <span className="flex-1 overflow-hidden transition-[white-space] whitespace-nowrap group-hover:whitespace-normal text-ellipsis">{item.name}</span>
       </Link>
       {hasChildren &&
         (
@@ -91,7 +91,7 @@ const Sidebar: React.FC<SidebarProps> = ({ data }) => {
         <Menu className="w-6 h-6" />
       </button>
       
-      <aside id="logo-sidebar" className={`bg-background [grid-area:1/-1] lg:[grid-area:auto] w-fit pt-14 h-screen overflow-hidden shadow-md sticky top-0 z-20 lg:translate-x-0 transition-transform ${isSidebarOpen?"translate-x-0":"-translate-x-full"}`} aria-label="Sidebar">
+      <aside id="logo-sidebar" className={`~w-[334px] ~lg:w-auto max-w-[360px] lg:w-[360px] bg-background [grid-area:1/-1] lg:[grid-area:auto] pt-14 h-screen overflow-hidden shadow-md sticky top-0 z-20 lg:translate-x-0 transition-transform ${isSidebarOpen?"translate-x-0":"-translate-x-full"}`} aria-label="Sidebar">
         <div className="scrollbar | h-full overflow-y-auto p-3 pt-6">
           <ul className="space-y-4 font-medium">
             {data.map((item, index) => (

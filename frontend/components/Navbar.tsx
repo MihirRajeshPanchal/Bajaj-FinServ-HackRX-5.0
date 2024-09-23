@@ -12,14 +12,13 @@ export const Navbar = () => {
                             <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap">Bajaj HackRx 5.0</span>
                         </Link>
                     </div>
-                    {/* <div className="flex items-center">
-                        <LoginButton />
-                    </div> */}
-                    <Link href="https://github.com/MihirRajeshPanchal/Bajaj-FinServ-HackRX-5.0" target="_blank">
-                        <p className="w-fit mx-auto p-3 rounded-lg bg-black text-white font-medium flex items-center gap-2">
-                            <GitHub />
-                            GitHub
-                        </p>
+                    <Link
+                        href="https://github.com/MihirRajeshPanchal/Bajaj-FinServ-HackRX-5.0"
+                        target="_blank"
+                        className="py-1 px-3 bg-black font-medium text-background shadow-[4px_4px_hsl(var(--secondary))] -translate-x-0.5 -translate-y-0.5 hover:translate-x-0 hover:translate-y-0 hover:shadow-[0px_0px_black] transition-[transform,box-shadow] flex items-center gap-1"
+                    >
+                        <GitHub />
+                        GitHub
                     </Link>
                 </div>
             </div>
