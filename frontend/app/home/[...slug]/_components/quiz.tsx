@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Timer } from 'lucide-react';
+import submitQuizResults from '@/app/api/submitQuizResults';
 
 type Question = {
   questionText: string;
@@ -21,7 +22,26 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
   const [timeLeft, setTimeLeft] = useState(30);
   const [quizFinished, setQuizFinished] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
-  const router = useRouter(); 
+  const [wrongAnswers, setWrongAnswers] = useState(0);
+  const router = useRouter();
+
+  // Function to generate a unique ID
+  // const generateUniqueId = () => {
+  //   return Math.floor(100000000 + Math.random() * 900000000).toString();
+  // };
+
+  // // Extract slug information
+  // const getSlugInfo = () => {
+  //   const pathname = window.location.pathname;
+  //   const parts = pathname.split('/');
+  //   return {
+  //     topic: parts[2] ? parts[2].replace(/-/g, ' ') : '',
+  //     plan: parts[3] ? parts[3].replace(/-/g, ' ') : '',
+  //     document: parts[4] ? parts[4] : '',
+  //   };
+  // };
+
+  // const slugInfo = getSlugInfo();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -55,6 +75,8 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
       selectedOption === currentQuestion.questionOptions[currentQuestion.questionAnswerIndex]
     ) {
       setScore((prevScore) => prevScore + 1);
+    } else {
+      setWrongAnswers((prevWrong) => prevWrong + 1);
     }
 
     setTimeout(moveToNextQuestion, 1000);
@@ -63,6 +85,7 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
   const moveToNextQuestion = () => {
     if (currentQuestionIndex === questions.length - 1) {
       setQuizFinished(true);
+      submitQuizResults(score, wrongAnswers);
     } else {
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
       setSelectedOption(null);
@@ -71,7 +94,34 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
     }
   };
 
-  
+  // const submitQuizResults = async () => {
+  //   const quizData = {
+  //     uid: generateUniqueId(),
+  //     topic: slugInfo.topic,
+  //     plan: slugInfo.plan,
+  //     document: slugInfo.document,
+  //     noCorrectResponse: score,
+  //     noWrongResponse: wrongAnswers
+  //   };
+
+  //   try {
+  //     const response = await fetch('/api/submit-quiz', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(quizData),
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error('Failed to submit quiz results');
+  //     }
+
+  //     console.log('Quiz results submitted successfully');
+  //   } catch (error) {
+  //     console.error('Error submitting quiz results:', error);
+  //   }
+  // };
 
   if (quizFinished) {
     return (
@@ -118,7 +168,6 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
           <h1 className="bg-background border-2 border-text to-50% px-4 py-2 rounded-full font-medium text-text">
             Question {currentQuestionIndex + 1}/{questions.length}
           </h1>
-          {/* <p className="text-black-400">Score: {score}</p> */}
         </div>
         <h2 className="text-2xl font-semibold text-text mb-6">
           {currentQuestion.questionText}
