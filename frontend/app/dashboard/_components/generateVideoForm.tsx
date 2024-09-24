@@ -4,7 +4,7 @@ import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Space_Mono } from "next/font/google";
 import { generateVideo } from '@/app/api/generateVideo';
 import { toast, Toaster } from 'sonner';
-// import { encrypt } from "@/lib/encrypt"; 
+import { Loader } from 'lucide-react';
 
 const font = Space_Mono({
   subsets: ["latin"],
@@ -26,6 +26,7 @@ export default function GenerateVideoForm() {
     pdf_link: ''
   });
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -37,8 +38,8 @@ export default function GenerateVideoForm() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
-      // const encryptedPresentationId = encrypt(formData.presentation_id);
       const response = await generateVideo({
         ...formData,
         no_of_questions: 5,
@@ -50,6 +51,8 @@ export default function GenerateVideoForm() {
     } catch (error) {
       console.error('Error generating video:', error);
       toast.error('Error generating video');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -86,12 +89,32 @@ export default function GenerateVideoForm() {
             <Toaster />
             <button
               type="submit"
+              disabled={isLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-b from-primary to-accent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 shadow-lg"
             >
-              Generate Video
+              {isLoading ? (
+                <div className="flex justify-center items-center">
+                  <Loader className="animate-spin h-5 w-5 mr-3" />
+                  <span>Generating Video...</span>
+                </div>
+              ) : (
+                'Generate Video'
+              )}
             </button>
           </div>
         </form>
+        {videoUrl && (
+          <div className="mt-4">
+            <h3 className="text-xl font-semibold">Generated Video</h3>
+            <div className='aspect-video'>
+            <iframe
+              src={videoUrl}
+              className="w-full h-full mt-4"
+              allowFullScreen
+            />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

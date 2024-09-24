@@ -145,10 +145,10 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
           </motion.div>
         )}
         <button
-          onClick={() => router.push('/home')}
+          onClick={() => router.back()}
           className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-blue-600 hover:to-purple-700 transition duration-300 shadow-lg"
         >
-          Back to home
+          Go back
         </button>
       </motion.div>
     );
