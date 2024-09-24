@@ -3,7 +3,6 @@ import os
 from typing import Any, Dict, List
 import uuid
 import json
-import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 from backend.constants import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
 from fastapi import HTTPException
