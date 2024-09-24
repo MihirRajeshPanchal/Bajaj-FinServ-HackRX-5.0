@@ -25,7 +25,7 @@ const submitQuizResults = async (score: number, wrongAnswers: number) => {
     };
   
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz-response`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quiz_response`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
