@@ -2,15 +2,19 @@ const generateUniqueId = () => {
     return Math.floor(100000000 + Math.random() * 900000000).toString();
   };
 
-  const getSlugInfo = () => {
+const getSlugInfo = () => {
+    const capitalizeFirstLetter = (str: string) => {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    };
+
     const pathname = window.location.pathname;
     const parts = pathname.split('/');
     return {
-      topic: parts[2] ? parts[2].replace(/-/g, ' ') : '',
-      plan: parts[3] ? parts[3].replace(/-/g, ' ') : '',
-      document: parts[4] ? parts[4] : '',
+        topic: parts[2] ? capitalizeFirstLetter(parts[2].replace(/-/g, ' ')) : '',
+        plan: parts[3] ? capitalizeFirstLetter(parts[3].replace(/-/g, ' ')) : '',
+        document: parts[4] ? capitalizeFirstLetter(parts[4]) : '',
     };
-  };
+};
 
   const slugInfo = getSlugInfo();
 
