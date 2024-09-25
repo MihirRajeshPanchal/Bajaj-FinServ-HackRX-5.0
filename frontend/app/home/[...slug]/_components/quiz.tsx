@@ -22,26 +22,8 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
   const [timeLeft, setTimeLeft] = useState(30);
   const [quizFinished, setQuizFinished] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [wrongAnswers, setWrongAnswers] = useState(0);
+  const [answeredQuestions, setAnsweredQuestions] = useState(0);
   const router = useRouter();
-
-  // Function to generate a unique ID
-  // const generateUniqueId = () => {
-  //   return Math.floor(100000000 + Math.random() * 900000000).toString();
-  // };
-
-  // // Extract slug information
-  // const getSlugInfo = () => {
-  //   const pathname = window.location.pathname;
-  //   const parts = pathname.split('/');
-  //   return {
-  //     topic: parts[2] ? parts[2].replace(/-/g, ' ') : '',
-  //     plan: parts[3] ? parts[3].replace(/-/g, ' ') : '',
-  //     document: parts[4] ? parts[4] : '',
-  //   };
-  // };
-
-  // const slugInfo = getSlugInfo();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -75,9 +57,8 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
       selectedOption === currentQuestion.questionOptions[currentQuestion.questionAnswerIndex]
     ) {
       setScore((prevScore) => prevScore + 1);
-    } else {
-      setWrongAnswers((prevWrong) => prevWrong + 1);
     }
+    setAnsweredQuestions((prev) => prev + 1);
 
     setTimeout(moveToNextQuestion, 1000);
   };
@@ -85,6 +66,7 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
   const moveToNextQuestion = () => {
     if (currentQuestionIndex === questions.length - 1) {
       setQuizFinished(true);
+      const wrongAnswers = answeredQuestions + 1 - score;
       submitQuizResults(score, wrongAnswers);
     } else {
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
@@ -93,35 +75,6 @@ const Quiz: React.FC<QuizProps> = ({ questions }) => {
       setShowAnswer(false);
     }
   };
-
-  // const submitQuizResults = async () => {
-  //   const quizData = {
-  //     uid: generateUniqueId(),
-  //     topic: slugInfo.topic,
-  //     plan: slugInfo.plan,
-  //     document: slugInfo.document,
-  //     noCorrectResponse: score,
-  //     noWrongResponse: wrongAnswers
-  //   };
-
-  //   try {
-  //     const response = await fetch('/api/submit-quiz', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(quizData),
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error('Failed to submit quiz results');
-  //     }
-
-  //     console.log('Quiz results submitted successfully');
-  //   } catch (error) {
-  //     console.error('Error submitting quiz results:', error);
-  //   }
-  // };
 
   if (quizFinished) {
     return (
